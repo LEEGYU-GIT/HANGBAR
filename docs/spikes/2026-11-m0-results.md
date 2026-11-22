@@ -27,6 +27,15 @@
 
 ## 기록
 
+### 항목 5 — MSIX 포장 (Task 12)
+
+- `packaging/build-msix.ps1`이 Godot 내보내기 → MSIX 포장(MakeAppx 10.0.22621) → 테스트 인증서(CN=HangbarSpike) 서명까지 한 번에 한다. 결과 `Hangbar_0.0.1.0_x64.msix` 71MB.
+- 매니페스트: 전체 신뢰(`runFullTrust`), `hangbar` 프로토콜, 시작 프로그램 작업(기본 꺼짐).
+- 내보낸 `Hangbar.exe`를 MSIX 밖에서 `hangbar://join/fromexport` 인자로 실행하면 HUD에 `join fromexport`가 뜬다. 오버레이, 작업표시줄 바닥도 개발 실행과 같다. 메모리 289MB.
+- 함정 2개: ① Godot .NET 내보내기는 프로젝트 폴더에 `<어셈블리 이름>.sln`(`Hangbar.App.sln`)이 있어야 한다. ② PowerShell `-replace`는 대소문자를 가리지 않아서 XML 선언의 `version="1.0"`까지 바꿨다. `-creplace`로 `Identity` 줄만 바꾼다.
+- 내보내기 템플릿(4.7.2 mono, 1.2GB)은 공식 SHA512와 일치함을 확인한 뒤 Windows x64 파일만 풀었다.
+- **사용자 확인 대기**(관리자 권한 필요): ① `packaging/out/hangbar-test.cer`를 "로컬 컴퓨터 → 신뢰할 수 있는 사람" 저장소에 넣기 ② MSIX 더블클릭 설치 → 시작 메뉴에서 실행 ③ MSIX 안에서도 아이콘 읽기, 클릭 통과, 로그인 루프백이 같은지 ④ 브라우저 주소창에 `hangbar://join/abc123` → 앱이 열리고 HUD에 `abc123` ⑤ Windows App Certification Kit 검사 결과.
+
 ### 항목 4 — 동기화 (Task 9, 11)
 
 - 중계 서버(Worker + 방 Durable Object)는 Vitest 6개 통과: 토큰 없음·다른 키·만료 → 401, 잘못된 방 이름 → 400, 보낸 사람 빼고 전달, ping은 보낸 사람에게만.

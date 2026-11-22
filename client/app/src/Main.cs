@@ -47,6 +47,16 @@ public partial class Main : Node
 
         if (System.Environment.GetEnvironmentVariable("HANGBAR_AUTH_SELFTEST") == "1") _ = SignInAsync(selfTest: true);
 
+        // Protocol activation (MSIX windows.protocol) passes the URI as a command-line argument.
+        var join = OS.GetCmdlineArgs().Concat(OS.GetCmdlineUserArgs())
+            .FirstOrDefault(a => a.StartsWith("hangbar://join/", StringComparison.OrdinalIgnoreCase));
+        if (join is not null)
+        {
+            var code = join["hangbar://join/".Length..].Trim('/');
+            GD.Print($"[link] join code={code}");
+            if (Overlays.Hud is { } hud) hud.Extra = $"\njoin {code}";
+        }
+
         var room = new Spike.RoomSpike { Name = "Room" };
         room.Init(Overlays, Chat);
         AddChild(room);
