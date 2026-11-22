@@ -1,0 +1,11 @@
+.godot/
+bin/
+obj/
+node_modules/
+.wrangler/
+*.msix
+*.pfx
+export/
+.dev.vars
+.superpowers/
+packaging/out/
