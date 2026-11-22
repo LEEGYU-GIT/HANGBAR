@@ -10,6 +10,7 @@ public partial class SpikeHud : Label
     TimeSpan _lastCpu;
     DateTime _lastWall;
     double _acc;
+    int _ticks;
 
     public double CpuPercent { get; private set; }
     public double WorkingSetMb { get; private set; }
@@ -37,5 +38,6 @@ public partial class SpikeHud : Label
         _lastCpu = cpu;
         _lastWall = now;
         Text = $"fps {Engine.GetFramesPerSecond():0}  cpu {CpuPercent:0.0}%  mem {WorkingSetMb:0}MB{Extra}";
+        if (++_ticks % 5 == 0) GD.Print($"[hud] {Text}");
     }
 }

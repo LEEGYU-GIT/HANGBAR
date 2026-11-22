@@ -111,6 +111,35 @@ internal static partial class Win32
     [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "FindWindowExW")]
     public static extern nint FindWindowEx(nint parent, nint childAfter, string? className, string? windowName);
 
+    public delegate bool EnumWindowsProc(nint hwnd, nint lParam);
+
+    [DllImport("user32.dll")]
+    public static extern bool EnumWindows(EnumWindowsProc proc, nint lParam);
+
+    [DllImport("user32.dll")]
+    public static extern bool IsIconic(nint hwnd);
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct APPBARDATA
+    {
+        public int cbSize;
+        public nint hWnd;
+        public uint uCallbackMessage;
+        public uint uEdge;
+        public RECT rc;
+        public nint lParam;
+    }
+
+    public const uint ABM_GETSTATE = 0x4, ABM_GETTASKBARPOS = 0x5;
+    public const uint ABS_AUTOHIDE = 0x1;
+    public const uint ABE_LEFT = 0, ABE_TOP = 1, ABE_RIGHT = 2, ABE_BOTTOM = 3;
+
+    [DllImport("shell32.dll")]
+    public static extern nint SHAppBarMessage(uint msg, ref APPBARDATA data);
+
+    public static bool IsCloaked(nint hwnd) =>
+        DwmGetWindowAttributeInt(hwnd, DWMWA_CLOAKED, out int c, sizeof(int)) == 0 && c != 0;
+
     public const uint LWA_ALPHA = 0x2;
 
     [DllImport("user32.dll")]

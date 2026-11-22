@@ -10,6 +10,7 @@ public partial class StickFigure : Node2D
     const float Width = 28f, Height = 64f;
 
     public float FloorY { get; set; }
+    public bool Walk { get; set; } = true;
     public float MaxX { get; set; } = 800;
     float _dir = 1, _vy, _walk;
 
@@ -34,9 +35,12 @@ public partial class StickFigure : Node2D
     {
         float dt = (float)delta;
         var p = Position;
-        p.X += _dir * Speed * dt;
-        if (p.X > MaxX - Width) { p.X = MaxX - Width; _dir = -1; }
-        if (p.X < Width) { p.X = Width; _dir = 1; }
+        if (Walk)
+        {
+            p.X += _dir * Speed * dt;
+            if (p.X > MaxX - Width) { p.X = MaxX - Width; _dir = -1; }
+            if (p.X < Width) { p.X = Width; _dir = 1; }
+        }
         _vy += 1200f * dt;
         p.Y = Math.Min(p.Y + _vy * dt, FloorY);
         if (p.Y >= FloorY) _vy = 0;

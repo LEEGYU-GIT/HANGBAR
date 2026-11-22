@@ -32,6 +32,10 @@ public partial class Main : Node
         Fullscreen.HiddenChanged += hidden => GD.Print($"[fullscreen] hidden={hidden}");
         AddChild(Fullscreen);
 
+        var terrain = new Spike.TerrainSpike { Name = "Terrain" };
+        terrain.Init(Overlays, () => Overlays.Windows.Select(w => w.Hwnd).Append(mainHwnd).ToHashSet());
+        AddChild(terrain);
+
         _icons = new Terrain.DesktopIconReader();
         var iconTimer = new Godot.Timer { WaitTime = 2.0, Autostart = true };
         iconTimer.Timeout += ReadIcons;
