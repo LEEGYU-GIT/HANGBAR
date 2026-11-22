@@ -46,6 +46,10 @@ public partial class OverlayManager : Node
                 Position = new Vector2(w.Size.X / 3f, w.Size.Y - 80),
             };
             w.AddChild(figure);
+            // Spike-only: extra walkers for resource measurement (HANGBAR_FIGURES=3 → 3 walkers).
+            if (int.TryParse(System.Environment.GetEnvironmentVariable("HANGBAR_FIGURES"), out int n))
+                for (int i = 1; i < n; i++)
+                    w.AddChild(new StickFigure { Name = $"Extra{i}", FloorY = figure.FloorY, MaxX = w.Size.X, Position = new Vector2(w.Size.X * (0.15f + 0.2f * i), figure.FloorY) });
             if (m.Primary)
             {
                 Hud = new SpikeHud { Position = new Vector2(w.Size.X - 420, w.Size.Y - 120) };
