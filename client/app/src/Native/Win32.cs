@@ -105,6 +105,12 @@ internal static partial class Win32
         return GetWindowRect(hwnd, out r);
     }
 
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "FindWindowW")]
+    public static extern nint FindWindow(string? className, string? windowName);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "FindWindowExW")]
+    public static extern nint FindWindowEx(nint parent, nint childAfter, string? className, string? windowName);
+
     public const uint LWA_ALPHA = 0x2;
 
     [DllImport("user32.dll")]

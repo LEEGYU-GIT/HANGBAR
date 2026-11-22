@@ -37,6 +37,7 @@ public partial class OverlayManager : Node
         foreach (var m in layout.Monitors)
         {
             var w = OverlayWindow.Create(m);
+            w.AddChild(new TerrainDebug { Name = "TerrainDebug", WindowRect = w.ScreenRect });
             var figure = new StickFigure
             {
                 Name = "Figure",

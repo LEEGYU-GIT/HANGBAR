@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using Hangbar.App.Overlay;
 
 namespace Hangbar.App;
@@ -31,7 +31,35 @@ public partial class Main : Node
         Fullscreen.Init(Overlays, ClickThrough, () => Overlays.Windows.Select(w => w.Hwnd).Append(mainHwnd));
         Fullscreen.HiddenChanged += hidden => GD.Print($"[fullscreen] hidden={hidden}");
         AddChild(Fullscreen);
+
+        _icons = new Terrain.DesktopIconReader();
+        var iconTimer = new Godot.Timer { WaitTime = 2.0, Autostart = true };
+        iconTimer.Timeout += ReadIcons;
+        AddChild(iconTimer);
+        ReadIcons();
     }
+
+    Terrain.DesktopIconReader _icons = null!;
+    string _lastIconLog = "";
+
+    async void ReadIcons()
+    {
+        var r = await _icons.ReadAsync();
+        foreach (var w in Overlays.Windows)
+        {
+            if (w.GetNodeOrNull<Spike.TerrainDebug>("TerrainDebug") is not { } dbg) continue;
+            dbg.Folders = r.FolderRects;
+            dbg.Others = r.OtherRects;
+            dbg.QueueRedraw();
+        }
+        // Counts only, never names (design section 3).
+        string log = r.Ok ? $"[icons] ok folders={r.FolderRects.Count} others={r.OtherRects.Count} first={(r.FolderRects.Count > 0 ? r.FolderRects[0] : r.OtherRects.FirstOrDefault())}"
+                          : $"[icons] failed {r.Error}";
+        if (log != _lastIconLog) GD.Print(log);
+        _lastIconLog = log;
+    }
+
+    public override void _ExitTree() => _icons?.Dispose();
 
     public FullscreenWatcher Fullscreen { get; private set; } = null!;
 
