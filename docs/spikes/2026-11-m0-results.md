@@ -27,6 +27,14 @@
 
 ## 기록
 
+### 항목 4 — 동기화 (Task 9, 11)
+
+- 중계 서버(Worker + 방 Durable Object)는 Vitest 6개 통과: 토큰 없음·다른 키·만료 → 401, 잘못된 방 이름 → 400, 보낸 사람 빼고 전달, ping은 보낸 사람에게만.
+- 이 PC에서 `wrangler dev`로 띄운 로컬 중계에 앱(사용자 u-app)과 Node 상대(u-peer)를 붙였다. 상대가 보낸 폴짝·채팅이 앱에 도착해 상대 인형이 생기고 말풍선 "안녕! 피어에서 보냄"이 떴다(캡처 확인). 왕복 시간 로컬 p50 2~4ms.
+- **찾은 결함과 수정**: 서버가 응답 없이 죽으면 앱이 "연결 중"에서 영원히 멈췄다. 연결 시도 10초 제한, ping 응답 6초 없으면 끊고 재연결을 넣었다. 수정 후 중계를 내렸다 8초 뒤 다시 띄우면 "재연결 대기 → 연결됨"으로 스스로 돌아온다.
+- 로컬 시험 방법: `server/.dev.vars`(git 제외)에 테스트 공개키, `node scripts/dev-token.ts <id>`로 개발용 토큰, 앱은 `HANGBAR_RELAY_URL=ws://127.0.0.1:8787` + `HANGBAR_DEV_TOKEN`, 상대는 `node scripts/peer.mjs ws://127.0.0.1:8787 m0-test <token> <초>`.
+- **사용자 확인 대기**: Cloudflare 배포(`npx wrangler login` → `npm run deploy`, `wrangler.jsonc`의 `SUPABASE_URL` 교체) 후 PC 두 대(가능하면 다른 네트워크)에서 10분 동안 폴짝·채팅, 실제 왕복 시간(목표 왕복 400ms 안팎), Cloudflare 대시보드의 10분간 요청 수로 사용자당 하루 요청 수 추정, 와이파이를 끊었다 켜서 재연결.
+
 ### 로그인 (Task 10)
 
 - PKCE(S256)와 루프백 콜백 해석은 Core 테스트로 확인(RFC 7636 부록 B 값 일치).

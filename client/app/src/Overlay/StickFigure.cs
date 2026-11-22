@@ -21,6 +21,25 @@ public partial class StickFigure : Node2D
 
     public event Action? Poked;
 
+    Label? _bubble;
+    double _bubbleLeft;
+
+    /// <summary>Shows a speech bubble above the head for 4 seconds.</summary>
+    public void Say(string text)
+    {
+        if (_bubble is null)
+        {
+            _bubble = new Label { Position = new Vector2(-120, -110), Size = new Vector2(240, 40), HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
+            _bubble.AddThemeFontOverride("font", new SystemFont { FontNames = new[] { "Malgun Gothic", "Segoe UI" } });
+            _bubble.AddThemeColorOverride("font_color", new Color(0.1f, 0.1f, 0.1f));
+            _bubble.AddThemeStyleboxOverride("normal", new StyleBoxFlat { BgColor = new Color(1, 1, 1, 0.95f), CornerRadiusTopLeft = 10, CornerRadiusTopRight = 10, CornerRadiusBottomLeft = 10, CornerRadiusBottomRight = 10, ContentMarginLeft = 8, ContentMarginRight = 8, ContentMarginTop = 4, ContentMarginBottom = 4 });
+            AddChild(_bubble);
+        }
+        _bubble.Text = text;
+        _bubble.Visible = true;
+        _bubbleLeft = 4.0;
+    }
+
     public override void _UnhandledInput(InputEvent e)
     {
         if (e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left } mb && LocalHitRect.HasPoint(mb.Position))
@@ -34,6 +53,7 @@ public partial class StickFigure : Node2D
     public override void _Process(double delta)
     {
         float dt = (float)delta;
+        if (_bubble is { Visible: true } && (_bubbleLeft -= delta) <= 0) _bubble.Visible = false;
         var p = Position;
         if (Walk)
         {

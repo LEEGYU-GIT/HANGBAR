@@ -47,6 +47,18 @@ public partial class Main : Node
 
         if (System.Environment.GetEnvironmentVariable("HANGBAR_AUTH_SELFTEST") == "1") _ = SignInAsync(selfTest: true);
 
+        var room = new Spike.RoomSpike { Name = "Room" };
+        room.Init(Overlays, Chat);
+        AddChild(room);
+        var cfg = Net.HangbarConfig.Load(ProjectSettings.GlobalizePath("res://"));
+        if (cfg.RelayUrl is { Length: > 0 } relayUrl)
+        {
+            var relay = new Uri(relayUrl.EndsWith('/') ? relayUrl : relayUrl + "/");
+            SignedIn += s => room.Connect(relay, s.AccessToken);
+            // Spike-only shortcut for testing the relay without a Supabase account.
+            if (System.Environment.GetEnvironmentVariable("HANGBAR_DEV_TOKEN") is { Length: > 0 } devToken) room.Connect(relay, devToken);
+        }
+
         _icons = new Terrain.DesktopIconReader();
         var iconTimer = new Godot.Timer { WaitTime = 2.0, Autostart = true };
         iconTimer.Timeout += ReadIcons;
