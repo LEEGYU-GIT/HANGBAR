@@ -36,6 +36,14 @@ public partial class Main : Node
         terrain.Init(Overlays, () => Overlays.Windows.Select(w => w.Hwnd).Append(mainHwnd).ToHashSet());
         AddChild(terrain);
 
+        if (System.Environment.GetEnvironmentVariable("HANGBAR_CHAT") != "0")
+        {
+            Chat = new Spike.ChatWindow { Name = "Chat", Position = new Vector2I(80, 120) };
+            AddChild(Chat);
+            Chat.Append("시스템", "한글 입력 시험: 안녕하세요 반가워요 ㅋㅋ");
+            Chat.Submitted += text => { Chat.Append("나", text); GD.Print($"[chat] submitted len={text.Length}"); };
+        }
+
         _icons = new Terrain.DesktopIconReader();
         var iconTimer = new Godot.Timer { WaitTime = 2.0, Autostart = true };
         iconTimer.Timeout += ReadIcons;
@@ -66,6 +74,7 @@ public partial class Main : Node
     public override void _ExitTree() => _icons?.Dispose();
 
     public FullscreenWatcher Fullscreen { get; private set; } = null!;
+    public Spike.ChatWindow? Chat { get; private set; }
 
     public ClickThroughDriver ClickThrough { get; private set; } = null!;
 }
