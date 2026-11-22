@@ -68,6 +68,43 @@ internal static partial class Win32
     [DllImport("user32.dll")]
     public static extern bool IsWindowVisible(nint hWnd);
 
+    [DllImport("shell32.dll")]
+    public static extern int SHQueryUserNotificationState(out int state);
+
+    [DllImport("user32.dll")]
+    public static extern nint GetForegroundWindow();
+
+    public const int DWMWA_EXTENDED_FRAME_BOUNDS = 9;
+    public const int DWMWA_CLOAKED = 14;
+
+    [DllImport("dwmapi.dll")]
+    public static extern int DwmGetWindowAttribute(nint hwnd, int attr, out RECT value, int size);
+
+    [DllImport("dwmapi.dll", EntryPoint = "DwmGetWindowAttribute")]
+    public static extern int DwmGetWindowAttributeInt(nint hwnd, int attr, out int value, int size);
+
+    public const uint MONITOR_DEFAULTTONEAREST = 2;
+
+    [DllImport("user32.dll")]
+    public static extern nint MonitorFromWindow(nint hwnd, uint flags);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetClassNameW")]
+    static extern int GetClassNameRaw(nint hwnd, System.Text.StringBuilder sb, int max);
+
+    /// <summary>Window class name (not the title — titles are never read).</summary>
+    public static string ClassName(nint hwnd)
+    {
+        var sb = new System.Text.StringBuilder(256);
+        return GetClassNameRaw(hwnd, sb, sb.Capacity) > 0 ? sb.ToString() : "";
+    }
+
+    /// <summary>Visible frame bounds (without the invisible resize border); falls back to GetWindowRect.</summary>
+    public static bool TryFrameBounds(nint hwnd, out RECT r)
+    {
+        if (DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, out r, System.Runtime.InteropServices.Marshal.SizeOf<RECT>()) == 0) return true;
+        return GetWindowRect(hwnd, out r);
+    }
+
     public const uint LWA_ALPHA = 0x2;
 
     [DllImport("user32.dll")]

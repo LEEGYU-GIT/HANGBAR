@@ -26,7 +26,14 @@ public partial class Main : Node
             GD.Print($"[click] {w.Monitor.Id} passthrough={on} cursor={ClickThrough.LastCursor} " +
                      $"exStyle=0x{Native.Win32.GetWindowLongPtr(w.Hwnd, Native.Win32.GWL_EXSTYLE):X}");
         AddChild(ClickThrough);
+
+        Fullscreen = new FullscreenWatcher { Name = "Fullscreen" };
+        Fullscreen.Init(Overlays, ClickThrough, () => Overlays.Windows.Select(w => w.Hwnd).Append(mainHwnd));
+        Fullscreen.HiddenChanged += hidden => GD.Print($"[fullscreen] hidden={hidden}");
+        AddChild(Fullscreen);
     }
+
+    public FullscreenWatcher Fullscreen { get; private set; } = null!;
 
     public ClickThroughDriver ClickThrough { get; private set; } = null!;
 }
