@@ -68,6 +68,11 @@ internal static partial class Win32
     [DllImport("user32.dll")]
     public static extern bool IsWindowVisible(nint hWnd);
 
+    public const uint LWA_ALPHA = 0x2;
+
+    [DllImport("user32.dll")]
+    public static extern bool SetLayeredWindowAttributes(nint hWnd, uint colorKey, byte alpha, uint flags);
+
     /// <summary>Adds and removes extended styles on one of our own windows.</summary>
     public static void ChangeExStyle(nint hwnd, long add, long remove)
     {

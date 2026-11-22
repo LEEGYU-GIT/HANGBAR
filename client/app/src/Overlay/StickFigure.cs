@@ -18,6 +18,18 @@ public partial class StickFigure : Node2D
 
     public void Jump() { if (Position.Y >= FloorY - 0.5f) _vy = -420f; }
 
+    public event Action? Poked;
+
+    public override void _UnhandledInput(InputEvent e)
+    {
+        if (e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left } mb && LocalHitRect.HasPoint(mb.Position))
+        {
+            Jump();
+            Poked?.Invoke();
+            GetViewport().SetInputAsHandled();
+        }
+    }
+
     public override void _Process(double delta)
     {
         float dt = (float)delta;

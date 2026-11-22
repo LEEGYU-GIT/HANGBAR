@@ -19,5 +19,14 @@ public partial class Main : Node
 
         Overlays = new OverlayManager { Name = "Overlays" };
         AddChild(Overlays);
+
+        ClickThrough = new ClickThroughDriver { Name = "ClickThrough" };
+        ClickThrough.Init(Overlays);
+        ClickThrough.PassthroughChanged += (w, on) =>
+            GD.Print($"[click] {w.Monitor.Id} passthrough={on} cursor={ClickThrough.LastCursor} " +
+                     $"exStyle=0x{Native.Win32.GetWindowLongPtr(w.Hwnd, Native.Win32.GWL_EXSTYLE):X}");
+        AddChild(ClickThrough);
     }
+
+    public ClickThroughDriver ClickThrough { get; private set; } = null!;
 }

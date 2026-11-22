@@ -35,7 +35,9 @@ public partial class OverlayWindow : Window
     {
         Hwnd = (nint)DisplayServer.WindowGetNativeHandle(DisplayServer.HandleType.WindowHandle, GetWindowId());
         // No taskbar button, no Alt+Tab entry, never takes activation.
-        Win32.ChangeExStyle(Hwnd, Win32.WS_EX_TOOLWINDOW | Win32.WS_EX_NOACTIVATE, Win32.WS_EX_APPWINDOW);
+        // Layered (fully opaque alpha) so that toggling WS_EX_TRANSPARENT really passes clicks to other apps.
+        Win32.ChangeExStyle(Hwnd, Win32.WS_EX_TOOLWINDOW | Win32.WS_EX_NOACTIVATE | Win32.WS_EX_LAYERED | Win32.WS_EX_TRANSPARENT, Win32.WS_EX_APPWINDOW);
+        Win32.SetLayeredWindowAttributes(Hwnd, 0, 255, Win32.LWA_ALPHA);
         Win32.SetWindowPos(Hwnd, Win32.HWND_TOPMOST, 0, 0, 0, 0,
             Win32.SWP_NOMOVE | Win32.SWP_NOSIZE | Win32.SWP_NOACTIVATE | Win32.SWP_FRAMECHANGED);
         GetTree().CreateTimer(1.0).Timeout += () =>
