@@ -14,6 +14,10 @@ public partial class ChatWindow : Window
     LineEdit _input = null!;
 
     public event Action<string>? Submitted;
+    public event Action? SignInRequested;
+    Label _status = null!;
+
+    public void SetStatus(string text) => _status.Text = text;
 
     public override void _Ready()
     {
@@ -33,6 +37,13 @@ public partial class ChatWindow : Window
         _input = new LineEdit { PlaceholderText = $"메시지 입력 (Enter로 보내기, {MaxChars}자까지)", MaxLength = MaxChars };
         _input.TextSubmitted += OnSubmit;
 
+        var top = new HBoxContainer();
+        var login = new Button { Text = "Google 로그인" };
+        login.Pressed += () => SignInRequested?.Invoke();
+        _status = new Label { Text = "로그인 전", SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, ClipText = true };
+        top.AddChild(login);
+        top.AddChild(_status);
+        root.AddChild(top);
         root.AddChild(_log);
         root.AddChild(_input);
         AddChild(root);

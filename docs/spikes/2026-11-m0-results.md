@@ -27,6 +27,14 @@
 
 ## 기록
 
+### 로그인 (Task 10)
+
+- PKCE(S256)와 루프백 콜백 해석은 Core 테스트로 확인(RFC 7636 부록 B 값 일치).
+- 콜백 수신기는 `HttpListener` 대신 127.0.0.1 TCP 수신기로 만들었다(`HttpListener`는 127.0.0.1에 URL 예약이 필요할 수 있음).
+- 자체 시험(Supabase 없이): 53682를 다른 프로그램이 쓰고 있으면 53683으로 넘어간다. 콜백이 아닌 요청은 404, 콜백은 200 + 안내 문구. 로그인 거부(`error=access_denied`)는 "로그인 실패"로 처리. 토큰 교환 네트워크 오류도 예외 없이 실패로 처리.
+- supabase-csharp는 쓰지 않고 `HttpClient`로 `/auth/v1/token?grant_type=pkce`를 직접 부른다(의존성 하나 줄이고, 필요한 호출이 둘뿐).
+- **사용자 준비 필요**: ① Supabase 프로젝트 생성 ② Google Cloud에서 OAuth 클라이언트를 만들어 Supabase의 Google 공급자에 등록 ③ Supabase 리디렉트 허용 목록에 `http://127.0.0.1:53682/callback`, `…53683/callback`, `…53684/callback` ④ `client/app/hangbar.local.example.json`을 `hangbar.local.json`으로 복사해 URL과 publishable key 입력. 그 뒤 채팅 창의 "Google 로그인"으로 실제 로그인을 확인한다.
+
 ### 항목 3 — 한글 입력 (Task 8)
 
 - 일반 창(투명 아님) 채팅 창이 뜨고, 맑은 고딕(`SystemFont`)으로 한글이 깨지지 않고 그려진다(캡처로 확인).

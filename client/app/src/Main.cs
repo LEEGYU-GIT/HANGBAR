@@ -42,7 +42,10 @@ public partial class Main : Node
             AddChild(Chat);
             Chat.Append("시스템", "한글 입력 시험: 안녕하세요 반가워요 ㅋㅋ");
             Chat.Submitted += text => { Chat.Append("나", text); GD.Print($"[chat] submitted len={text.Length}"); };
+            Chat.SignInRequested += () => _ = SignInAsync(selfTest: false);
         }
+
+        if (System.Environment.GetEnvironmentVariable("HANGBAR_AUTH_SELFTEST") == "1") _ = SignInAsync(selfTest: true);
 
         _icons = new Terrain.DesktopIconReader();
         var iconTimer = new Godot.Timer { WaitTime = 2.0, Autostart = true };
@@ -72,6 +75,41 @@ public partial class Main : Node
     }
 
     public override void _ExitTree() => _icons?.Dispose();
+
+    public Net.Session? Session { get; private set; }
+    public event Action<Net.Session>? SignedIn;
+
+    /// <summary>Self-test (no Supabase account): listener + callback parsing only; the token exchange is expected to fail.</summary>
+    async Task SignInAsync(bool selfTest)
+    {
+        var config = Net.HangbarConfig.Load(ProjectSettings.GlobalizePath("res://"));
+        if (!selfTest && !config.CanSignIn)
+        {
+            Chat?.SetStatus("Supabase 설정 없음 (hangbar.local.json)");
+            GD.Print("[auth] no supabase config");
+            return;
+        }
+        var auth = selfTest
+            ? new Net.AuthLoopback("http://127.0.0.1:9", "selftest", url => GD.Print($"[auth] would open browser (url length {url.Length})"))
+            : new Net.AuthLoopback(config.SupabaseUrl!, config.SupabaseKey!, url => OS.ShellOpen(url));
+        auth.Log += line => CallDeferred(nameof(LogLine), line);
+        Chat?.SetStatus("브라우저에서 로그인 중...");
+        try
+        {
+            var s = await auth.SignInAsync(CancellationToken.None);
+            if (s is null) { Chat?.SetStatus("로그인 실패"); return; }
+            Session = s;
+            Chat?.SetStatus($"로그인됨 {s.UserId[..8]}");
+            SignedIn?.Invoke(s);
+        }
+        catch (Exception e)
+        {
+            GD.Print($"[auth] error {e.GetType().Name}");
+            Chat?.SetStatus("로그인 오류");
+        }
+    }
+
+    void LogLine(string line) => GD.Print(line);
 
     public FullscreenWatcher Fullscreen { get; private set; } = null!;
     public Spike.ChatWindow? Chat { get; private set; }

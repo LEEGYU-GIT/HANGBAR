@@ -1,0 +1,5 @@
+{
+  "supabaseUrl": "https://YOUR-PROJECT.supabase.co",
+  "supabaseKey": "sb_publishable_...",
+  "relayUrl": "wss://hangbar-relay.YOUR-SUBDOMAIN.workers.dev"
+}
