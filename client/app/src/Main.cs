@@ -1,5 +1,6 @@
 ﻿using Godot;
 using Hangbar.App.Overlay;
+using Hangbar.Core;
 
 namespace Hangbar.App;
 
@@ -10,6 +11,10 @@ public partial class Main : Node
 
     public override void _Ready()
     {
+        // All Win32 coordinates in this app assume physical pixels, which needs per-monitor DPI awareness (review C1).
+        int dpi = Native.Win32.ThreadDpiAwareness();
+        GD.Print($"[dpi] awareness={dpi} ({(dpi == 2 ? "per-monitor" : dpi == 1 ? "system - coordinates wrong on mixed-DPI monitors" : "unaware")})");
+
         var main = GetWindow();
         main.Size = new Vector2I(1, 1);
         main.Position = new Vector2I(0, 0);
@@ -64,9 +69,13 @@ public partial class Main : Node
         if (cfg.RelayUrl is { Length: > 0 } relayUrl)
         {
             var relay = new Uri(relayUrl.EndsWith('/') ? relayUrl : relayUrl + "/");
-            SignedIn += s => room.Connect(relay, s.AccessToken);
-            // Spike-only shortcut for testing the relay without a Supabase account.
-            if (System.Environment.GetEnvironmentVariable("HANGBAR_DEV_TOKEN") is { Length: > 0 } devToken) room.Connect(relay, devToken);
+            SignedIn += _ => room.Connect(relay, CurrentTokenAsync);
+            // Spike-only shortcut for testing the relay without a Supabase account (no refresh possible).
+            if (System.Environment.GetEnvironmentVariable("HANGBAR_DEV_TOKEN") is { Length: > 0 } devToken)
+            {
+                int devRejections = 0;
+                room.Connect(relay, force => Task.FromResult(force && ++devRejections > 1 ? null : devToken));
+            }
         }
 
         _icons = new Terrain.DesktopIconReader();
@@ -121,6 +130,7 @@ public partial class Main : Node
             var s = await auth.SignInAsync(CancellationToken.None);
             if (s is null) { Chat?.SetStatus("로그인 실패"); return; }
             Session = s;
+            _auth = auth;
             Chat?.SetStatus($"로그인됨 {s.UserId[..8]}");
             SignedIn?.Invoke(s);
         }
@@ -132,6 +142,28 @@ public partial class Main : Node
     }
 
     void LogLine(string line) => GD.Print(line);
+
+    Net.AuthLoopback? _auth;
+    readonly SemaphoreSlim _refreshLock = new(1, 1);
+
+    /// <summary>
+    /// Token for (re)connecting: refreshed when it expires within a minute or when the relay rejected it
+    /// (review I4). Null when there is no session or the refresh token is no longer accepted.
+    /// </summary>
+    async Task<string?> CurrentTokenAsync(bool forceRefresh)
+    {
+        await _refreshLock.WaitAsync();
+        try
+        {
+            if (Session is not { } s || _auth is null) return null;
+            if (!forceRefresh && !TokenRefresh.ShouldRefresh(s.ExpiresAt, DateTimeOffset.UtcNow)) return s.AccessToken;
+            var next = await _auth.RefreshAsync(s.RefreshToken, CancellationToken.None);
+            if (next is null) return null;
+            Session = next;
+            return next.AccessToken;
+        }
+        finally { _refreshLock.Release(); }
+    }
 
     public FullscreenWatcher Fullscreen { get; private set; } = null!;
     public Spike.ChatWindow? Chat { get; private set; }

@@ -20,6 +20,16 @@ Remove-Item (Join-Path $exportDir "Hangbar.exe") -ErrorAction SilentlyContinue
 cmd /c "`"$godot`" --headless --path `"$app`" --export-release `"Windows Desktop`" `"$(Join-Path $exportDir 'Hangbar.exe')`" > `"$(Join-Path $out 'godot-export.log')`" 2>&1"
 if (-not (Test-Path (Join-Path $exportDir "Hangbar.exe"))) { throw "Godot export failed (see out/godot-export.log)" }
 
+# 1b. Per-monitor DPI awareness v2 (review C1). Godot itself asks only for system awareness; a manifest wins.
+#     The pck is exported as a separate file (embed_pck=false) so rewriting exe resources cannot damage it.
+$exe = Join-Path $exportDir "Hangbar.exe"
+$mt = Join-Path $sdk "mt.exe"
+& $mt -nologo -inputresource:"$exe;#1" -manifest (Join-Path $pkg "dpi.manifest") -outputresource:"$exe;#1" *> (Join-Path $out "mt.log")
+if ($LASTEXITCODE -ne 0) {
+  & $mt -nologo -manifest (Join-Path $pkg "dpi.manifest") -outputresource:"$exe;#1" *>> (Join-Path $out "mt.log")
+  if ($LASTEXITCODE -ne 0) { throw "mt.exe failed (see out/mt.log)" }
+}
+
 # 2. Stage: exported files + manifest (with version) + assets
 Remove-Item -Recurse -Force $stage -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force $stage | Out-Null

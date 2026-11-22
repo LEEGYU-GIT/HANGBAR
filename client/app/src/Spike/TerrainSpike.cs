@@ -23,6 +23,8 @@ public partial class TerrainSpike : Node
     nint _ridden;
     int _offsetX;
     readonly Dictionary<string, int> _floorY = new();
+    Task<List<TaskbarReader.Taskbar>>? _taskbarRead;
+    List<TaskbarReader.Taskbar> _bars = new();
 
     public void Init(OverlayManager overlays, Func<IReadOnlySet<nint>> own)
     {
@@ -46,11 +48,19 @@ public partial class TerrainSpike : Node
         var windows = WindowEdgeReader.Read(_own());
         var segments = TopEdgeClipper.Clip(windows.Select(w => w.Rect).ToList());
 
+        // SHAppBarMessage waits on explorer; never call it on the main thread (review I7).
+        // A hung explorer only leaves the last known floors in place.
+        if (_taskbarRead is { IsCompleted: true } done)
+        {
+            if (done.IsCompletedSuccessfully) _bars = done.Result;
+            _taskbarRead = null;
+        }
+        _taskbarRead ??= Task.Run(() => TaskbarReader.Read(layout));
+
         _floorY.Clear();
-        var bars = TaskbarReader.Read(layout);
         foreach (var m in layout.Monitors)
         {
-            var bar = bars.FirstOrDefault(b => b.MonitorId == m.Id);
+            var bar = _bars.FirstOrDefault(b => b.MonitorId == m.Id);
             _floorY[m.Id] = TaskbarFloor.FloorY(m, bar?.Rect, bar?.Edge ?? TaskbarEdge.Bottom, bar?.AutoHide ?? false);
         }
 

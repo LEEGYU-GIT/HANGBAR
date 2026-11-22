@@ -9,6 +9,8 @@ namespace Hangbar.App.Native;
 internal static partial class Win32
 {
     public const int GWL_EXSTYLE = -20;
+    public const int GWL_STYLE = -16;
+    public const long WS_CAPTION = 0x00C00000;
     public const long WS_EX_TRANSPARENT = 0x00000020;
     public const long WS_EX_TOOLWINDOW = 0x00000080;
     public const long WS_EX_LAYERED = 0x00080000;
@@ -139,6 +141,15 @@ internal static partial class Win32
 
     public static bool IsCloaked(nint hwnd) =>
         DwmGetWindowAttributeInt(hwnd, DWMWA_CLOAKED, out int c, sizeof(int)) == 0 && c != 0;
+
+    [DllImport("user32.dll")]
+    static extern nint GetThreadDpiAwarenessContext();
+
+    [DllImport("user32.dll")]
+    static extern int GetAwarenessFromDpiAwarenessContext(nint context);
+
+    /// <summary>0 unaware, 1 system aware, 2 per-monitor aware (PMv2 also reports 2).</summary>
+    public static int ThreadDpiAwareness() => GetAwarenessFromDpiAwarenessContext(GetThreadDpiAwarenessContext());
 
     public const uint LWA_ALPHA = 0x2;
 

@@ -15,10 +15,15 @@ public enum QunsState
 /// <summary>Decides whether overlays should hide because something fullscreen is in front (design §6-3).</summary>
 public static class FullscreenPolicy
 {
-    public static bool ShouldHide(QunsState state, RectI? foregroundRect, RectI foregroundMonitorBounds, bool foregroundIsShellOrOwn)
+    /// <param name="foregroundIsOrdinaryWindow">
+    /// True for a maximized window or one with a title bar. With an auto-hide taskbar such a window covers the
+    /// whole monitor without being fullscreen, so cover-the-monitor must not count for it.
+    /// </param>
+    public static bool ShouldHide(QunsState state, RectI? foregroundRect, RectI foregroundMonitorBounds, bool foregroundIsShellOrOwn,
+        bool foregroundIsOrdinaryWindow = false)
     {
         if (state is QunsState.Busy or QunsState.RunningD3DFullScreen or QunsState.PresentationMode) return true;
-        if (foregroundIsShellOrOwn || foregroundRect is not { } r) return false;
+        if (foregroundIsShellOrOwn || foregroundIsOrdinaryWindow || foregroundRect is not { } r) return false;
         var m = foregroundMonitorBounds;
         // Borderless "windowed fullscreen" games are missed by QUNS; cover-the-whole-monitor catches them.
         return r.X <= m.X && r.Y <= m.Y && r.Right >= m.Right && r.Bottom >= m.Bottom;

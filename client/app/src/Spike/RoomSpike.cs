@@ -29,10 +29,13 @@ public partial class RoomSpike : Node
         if (_chat is not null) _chat.Submitted += text => Send(new { t = "chat", text });
     }
 
-    public void Connect(Uri relay, string accessToken)
+    public void Connect(Uri relay, TokenProvider tokens)
     {
-        _client = new RoomClient();
-        _ = _client.ConnectAsync(relay, RoomId, accessToken);
+        if (_client is not null) _ = _client.DisposeAsync(); // one connection at a time
+        // Spike: HANGBAR_PING_MS lowers the keepalive interval to sample latency (default 20s, review I3).
+        int ping = int.TryParse(System.Environment.GetEnvironmentVariable("HANGBAR_PING_MS"), out var p) ? p : 20_000;
+        _client = new RoomClient(ping);
+        _ = _client.ConnectAsync(relay, RoomId, tokens);
         GD.Print($"[room] connecting to {RoomId}");
     }
 

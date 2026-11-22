@@ -56,6 +56,10 @@ public partial class FullscreenWatcher : Node
         var info = new Win32.MONITORINFOEX { cbSize = System.Runtime.InteropServices.Marshal.SizeOf<Win32.MONITORINFOEX>() };
         var monRect = Win32.GetMonitorInfo(mon, ref info) ? DisplayInfo.ToRect(info.rcMonitor) : default;
 
-        return FullscreenPolicy.ShouldHide(state, fgRect, monRect, shellOrOwn);
+        // A title bar means an ordinary window (e.g. maximized with an auto-hide taskbar), not fullscreen.
+        // Maximized-ness alone is not used: some borderless games run as maximized popups.
+        bool ordinary = (Win32.GetWindowLongPtr(fg, Win32.GWL_STYLE) & Win32.WS_CAPTION) == Win32.WS_CAPTION;
+
+        return FullscreenPolicy.ShouldHide(state, fgRect, monRect, shellOrOwn, ordinary);
     }
 }

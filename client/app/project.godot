@@ -6,6 +6,7 @@ config_version=5
 config/name="HANGBAR"
 run/main_scene="res://Main.tscn"
 run/max_fps=30
+run/flush_stdout_on_print=true
 config/features=PackedStringArray("4.7", "C#")
 
 [display]

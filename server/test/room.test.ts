@@ -5,7 +5,7 @@ import { TEST_PRIVATE_JWK } from "./keys";
 
 const SUPABASE_URL = "https://test.supabase.co";
 
-async function token(sub: string, opts: { expiredSecondsAgo?: number; key?: CryptoKey } = {}) {
+async function token(sub: string, opts: { expiredSecondsAgo?: number; expiresInSeconds?: number; key?: CryptoKey } = {}) {
   const key = opts.key ?? ((await importJWK(TEST_PRIVATE_JWK, "ES256")) as CryptoKey);
   const now = Math.floor(Date.now() / 1000);
   return new SignJWT({ role: "authenticated" })
@@ -14,7 +14,7 @@ async function token(sub: string, opts: { expiredSecondsAgo?: number; key?: Cryp
     .setIssuer(`${SUPABASE_URL}/auth/v1`)
     .setAudience("authenticated")
     .setIssuedAt(now - 120)
-    .setExpirationTime(opts.expiredSecondsAgo ? now - opts.expiredSecondsAgo : now + 3600)
+    .setExpirationTime(opts.expiredSecondsAgo ? now - opts.expiredSecondsAgo : now + (opts.expiresInSeconds ?? 3600))
     .sign(key);
 }
 
@@ -30,15 +30,21 @@ function client(res: Response) {
   const ws = res.webSocket!;
   const queue: unknown[] = [];
   const waiters: ((m: unknown) => void)[] = [];
+  let closeCode: number | null = null;
   ws.addEventListener("message", (e) => {
-    const m = JSON.parse(e.data as string);
+    const raw = e.data as string;
+    let m: unknown;
+    try { m = JSON.parse(raw); } catch { m = raw; } // "pong" is plain text
     const w = waiters.shift();
     w ? w(m) : queue.push(m);
   });
+  ws.addEventListener("close", (e) => { closeCode = e.code; });
   ws.accept();
   return {
     ws,
+    closeCode: () => closeCode,
     send: (m: unknown) => ws.send(JSON.stringify(m)),
+    sendRaw: (s: string) => ws.send(s),
     /** Resolves with the next message, or null if none arrives within `ms`. */
     next: (ms = 1000) =>
       new Promise<unknown>((resolve) => {
@@ -87,11 +93,43 @@ describe("room relay", () => {
     expect(await a.next(500)).toBeNull();
   });
 
-  it("answers ping only to the sender", async () => {
+  // Review I3: keepalive must not wake the Durable Object, so "ping" is answered by the runtime auto-response.
+  it("answers a bare ping with pong, only to the sender", async () => {
     const a = client(await open("/room/ping1", await token("u1")));
     const b = client(await open("/room/ping1", await token("u2")));
-    a.send({ t: "ping", id: 7, sentAt: 123 });
-    expect(await a.next()).toEqual({ t: "pong", id: 7, sentAt: 123 });
+    a.sendRaw("ping");
+    expect(await a.next()).toBe("pong");
     expect(await b.next(500)).toBeNull();
   });
+
+  // Review I5: a member must not be able to forge keepalive replies for others.
+  it("drops client-sent pong instead of relaying it", async () => {
+    const a = client(await open("/room/forge1", await token("u1")));
+    const b = client(await open("/room/forge1", await token("u2")));
+    a.send({ t: "pong", id: 1, sentAt: 0 });
+    a.sendRaw("pong");
+    expect(await b.next(500)).toBeNull();
+  });
+
+  // Review I4: an open socket whose token has expired is closed with 4001 and its messages are not relayed.
+  it("closes a socket whose token expired and stops relaying it", async () => {
+    const a = client(await open("/room/exp1", await token("u1", { expiresInSeconds: 2 })));
+    const b = client(await open("/room/exp1", await token("u2")));
+    await new Promise((r) => setTimeout(r, 2600));
+    a.send({ t: "jump" });
+    expect(await b.next(800)).toBeNull();
+    await new Promise((r) => setTimeout(r, 200));
+    expect(a.closeCode()).toBe(4001);
+  }, 10_000);
+
+  // Review I4 (receive side): a silent socket with an expired token must not keep receiving the room.
+  it("does not deliver to a socket whose token expired", async () => {
+    const a = client(await open("/room/exp2", await token("u1", { expiresInSeconds: 2 })));
+    const b = client(await open("/room/exp2", await token("u2")));
+    await new Promise((r) => setTimeout(r, 2600));
+    b.send({ t: "chat", text: "secret" });
+    expect(await a.next(800)).toBeNull();
+    await new Promise((r) => setTimeout(r, 200));
+    expect(a.closeCode()).toBe(4001);
+  }, 10_000);
 });

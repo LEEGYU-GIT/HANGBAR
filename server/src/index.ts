@@ -30,6 +30,7 @@ export default {
     const stub = env.ROOM.get(env.ROOM.idFromName(roomId));
     const forwarded = new Request(request);
     forwarded.headers.set("X-Hangbar-User", user.userId);
+    forwarded.headers.set("X-Hangbar-Exp", String(user.exp));
     return stub.fetch(forwarded);
   },
 };

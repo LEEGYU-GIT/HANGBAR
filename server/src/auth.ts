@@ -16,13 +16,16 @@ function keysFor(env: AuthEnv): JWTVerifyGetKey {
 }
 
 /** Verifies a Supabase access token. Returns null for any invalid, expired or foreign token. */
-export async function verifyToken(token: string, env: AuthEnv): Promise<{ userId: string } | null> {
+export async function verifyToken(token: string, env: AuthEnv): Promise<{ userId: string; exp: number } | null> {
   try {
     const { payload } = await jwtVerify(token, keysFor(env), {
       issuer: `${env.SUPABASE_URL}/auth/v1`,
       audience: "authenticated",
+      requiredClaims: ["exp", "sub"],
     });
-    return typeof payload.sub === "string" && payload.sub ? { userId: payload.sub } : null;
+    return typeof payload.sub === "string" && payload.sub && typeof payload.exp === "number"
+      ? { userId: payload.sub, exp: payload.exp }
+      : null;
   } catch {
     return null;
   }

@@ -18,8 +18,14 @@ public partial class OverlayManager : Node
 
     public override void _Ready() => Rebuild(DisplayInfo.Read());
 
+    // Spike-only: HANGBAR_DEBUG_REBUILD_AT=<seconds> forces one rebuild, to reproduce a layout change.
+    double _forceRebuildAt = double.TryParse(System.Environment.GetEnvironmentVariable("HANGBAR_DEBUG_REBUILD_AT"), out var s) ? s : -1;
+    double _age;
+
     public override void _Process(double delta)
     {
+        _age += delta;
+        if (_forceRebuildAt > 0 && _age >= _forceRebuildAt) { _forceRebuildAt = -1; Rebuild(DisplayInfo.Read()); }
         _since += delta;
         if (_since < 2.0) return;
         _since = 0;
@@ -55,16 +61,21 @@ public partial class OverlayManager : Node
                 Hud = new SpikeHud { Position = new Vector2(w.Size.X - 420, w.Size.Y - 120) };
                 w.AddChild(Hud);
             }
+            w.Visible = _visible; // keep the hidden state across rebuilds (review I1)
             AddChild(w);
             _windows.Add(w);
         }
         GD.Print($"[overlay] rebuilt: {layout.Monitors.Count} monitor(s): " +
                  string.Join(", ", layout.Monitors.Select(m => $"{m.Bounds.W}x{m.Bounds.H}@{m.Bounds.X},{m.Bounds.Y} x{m.Scale:0.##}{(m.Primary ? " primary" : "")}")));
         Rebuilt?.Invoke();
+        GD.Print($"[overlay] after rebuild visible={string.Join(",", _windows.Select(w => w.Visible))}");
     }
+
+    bool _visible = true;
 
     public void SetAllVisible(bool visible)
     {
+        _visible = visible;
         foreach (var w in _windows) w.Visible = visible;
     }
 }
