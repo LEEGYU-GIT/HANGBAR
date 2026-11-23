@@ -56,6 +56,11 @@ public partial class WorldRoot : Node3D
         Player = new Player { Position = SpawnPoint };
         AddChild(Player);
         if (Args.TryGetValue("walktest", out var secs) && float.TryParse(secs, out var s)) _ = WalkTest(s);
+
+        double bench = Args.TryGetValue("bench", out var b) && double.TryParse(b, out var bs) ? bs : 0;
+        var probe = new PerfProbe();
+        probe.Init(this, bench, Args.GetValueOrDefault("out"));
+        AddChild(probe);
     }
 
     public override void _PhysicsProcess(double delta)
