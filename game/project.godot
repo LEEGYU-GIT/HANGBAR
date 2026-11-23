@@ -1,0 +1,22 @@
+; Engine configuration file.
+config_version=5
+
+[application]
+
+config/name="INPC"
+run/main_scene="res://Main.tscn"
+run/flush_stdout_on_print=true
+config/features=PackedStringArray("4.7", "C#", "Forward Plus")
+
+[display]
+
+window/size/viewport_width=1600
+window/size/viewport_height=900
+
+[dotnet]
+
+project/assembly_name="Inpc.Game"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"

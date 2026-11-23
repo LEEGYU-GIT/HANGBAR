@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inpc.Game", "Inpc.Game.csproj", "{A72FF172-2061-48F0-B363-DA9969215D7E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangbar.Core", "..\client\core\Hangbar.Core.csproj", "{28086850-E121-4535-AF66-E55038085A29}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A72FF172-2061-48F0-B363-DA9969215D7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A72FF172-2061-48F0-B363-DA9969215D7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A72FF172-2061-48F0-B363-DA9969215D7E}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{A72FF172-2061-48F0-B363-DA9969215D7E}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{28086850-E121-4535-AF66-E55038085A29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28086850-E121-4535-AF66-E55038085A29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28086850-E121-4535-AF66-E55038085A29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28086850-E121-4535-AF66-E55038085A29}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
