@@ -7,7 +7,7 @@ $app = Join-Path $root "client\app"
 $pkg = $PSScriptRoot
 $out = Join-Path $pkg "out"
 $stage = Join-Path $out "stage"
-$godot = "C:\Users\ljsn1\AppData\Local\Microsoft\WinGet\Packages\GodotEngine.GodotEngine.Mono_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7.2-stable_mono_win64\Godot_v4.7.2-stable_mono_win64_console.exe"
+$godot = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\GodotEngine.GodotEngine.Mono_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7.2-stable_mono_win64\Godot_v4.7.2-stable_mono_win64_console.exe"
 $sdk = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64"
 $env:PATH = "C:\Program Files\dotnet;" + $env:PATH
 

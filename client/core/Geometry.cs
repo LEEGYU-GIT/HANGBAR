@@ -16,7 +16,7 @@ public readonly record struct RectI(int X, int Y, int W, int H)
     {
         int dx = Math.Max(Math.Max(X - p.X, 0), p.X - Right);
         int dy = Math.Max(Math.Max(Y - p.Y, 0), p.Y - Bottom);
-        return Contains(p) ? 0 : Math.Max(dx, dy);
+        return Contains(p) ? 0 : Math.Max(1, Math.Max(dx, dy)); // a point on the exclusive edge is 1 away, not 0
     }
 }
 

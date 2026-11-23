@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Godot;
-using Hangbar.App.Net;
+using Hangbar.Core.Net;
 using Hangbar.App.Overlay;
 
 namespace Hangbar.App.Spike;
@@ -69,10 +69,21 @@ public partial class RoomSpike : Node
 
     void Handle(string json)
     {
+        // Room members control this input: one odd message must not stop the rest of the frame's queue (ECC review).
+        try { HandleUnsafe(json); }
+        catch (Exception e) when (e is JsonException or InvalidOperationException) { GD.Print($"[room] dropped malformed message ({e.GetType().Name})"); }
+    }
+
+    static string? Str(JsonElement root, string name) =>
+        root.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
+    void HandleUnsafe(string json)
+    {
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
-        var t = root.TryGetProperty("t", out var tp) ? tp.GetString() : null;
-        var from = root.TryGetProperty("from", out var fp) ? fp.GetString() ?? "?" : "?";
+        if (root.ValueKind != JsonValueKind.Object) return;
+        var t = Str(root, "t");
+        var from = Str(root, "from") ?? "?";
         var who = from[..Math.Min(8, from.Length)];
         var figure = RemoteFigure(from);
         switch (t)
@@ -82,7 +93,8 @@ public partial class RoomSpike : Node
                 GD.Print($"[room] jump from {who}");
                 break;
             case "chat":
-                var text = root.TryGetProperty("text", out var tx) ? tx.GetString() ?? "" : "";
+                var text = Str(root, "text") ?? "";
+                if (text.Length > 500) text = text[..500]; // same cap as our own chat box
                 _chat?.Append(who, text);
                 figure?.Say(text);
                 GD.Print($"[room] chat from {who} len={text.Length}");

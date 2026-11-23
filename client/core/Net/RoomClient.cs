@@ -3,15 +3,28 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.WebSockets;
 using System.Text;
-using Hangbar.Core;
 
-namespace Hangbar.App.Net;
+namespace Hangbar.Core.Net;
 
-/// <summary>
-/// Supplies an access token for (re)connecting. forceRefresh=true after the relay rejected the last one.
-/// Returns null when no valid token can be obtained (user must sign in again).
-/// </summary>
-public delegate Task<string?> TokenProvider(bool forceRefresh);
+/// <summary>Answer of a <see cref="TokenProvider"/>.</summary>
+public readonly record struct TokenResult(string? Token, bool Rejected)
+{
+    public static TokenResult Ok(string token) => new(token, false);
+    /// <summary>No session, or the refresh token is no longer accepted: the user must sign in again.</summary>
+    public static readonly TokenResult SignInAgain = new(null, true);
+    /// <summary>No token right now (network down, Supabase hiccup): back off and ask again.</summary>
+    public static readonly TokenResult TryLater = new(null, false);
+}
+
+/// <summary>Supplies an access token for (re)connecting. forceRefresh=true after the relay rejected the last one.</summary>
+public delegate Task<TokenResult> TokenProvider(bool forceRefresh);
+
+/// <summary>How a failed Supabase refresh response is read.</summary>
+public static class RefreshResponse
+{
+    /// <summary>400/401/403 mean the refresh token (or key) is refused; 429, 5xx and everything else are worth retrying.</summary>
+    public static bool IsRejection(int status) => status is 400 or 401 or 403;
+}
 
 /// <summary>
 /// WebSocket connection to one room on the relay (design §7-3).
@@ -36,12 +49,18 @@ public sealed class RoomClient : IAsyncDisposable
     public LatencyStats Latency { get; } = new();
     public string Status { get; private set; } = "연결 전";
     public bool Unauthorized { get; private set; }
+    /// <summary>Why the last attempt failed (exception type, HTTP status), so a wrong relay URL does not look like a flaky network.</summary>
+    public string? LastError { get; private set; }
+
+    readonly Func<int, int> _backoffMs;
 
     /// <param name="pingIntervalMs">Keepalive interval. 20s by default; the spike may lower it to sample latency.</param>
-    public RoomClient(int pingIntervalMs = 20_000)
+    /// <param name="backoffMs">Reconnect delay per attempt; ReconnectBackoff by default (tests pass a short one).</param>
+    public RoomClient(int pingIntervalMs = 20_000, Func<int, int>? backoffMs = null)
     {
         _pingIntervalMs = pingIntervalMs;
         _pongTimeoutMs = Math.Max(6_000, pingIntervalMs / 2);
+        _backoffMs = backoffMs ?? ReconnectBackoff.DelayMs;
     }
 
     public bool TryDequeue(out string json) => _inbox.TryDequeue(out json!);
@@ -59,12 +78,27 @@ public sealed class RoomClient : IAsyncDisposable
         bool forceRefresh = false;
         for (int attempt = 0; !ct.IsCancellationRequested; attempt++)
         {
-            var token = await tokens(forceRefresh);
-            if (token is null)
+            TokenResult answer;
+            try { answer = await tokens(forceRefresh); }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
+            catch (Exception e)
+            {
+                // A provider that throws (refresh timeout, odd response) is a transient failure, not the end of the loop.
+                LastError = $"token {e.GetType().Name}";
+                answer = TokenResult.TryLater;
+            }
+            if (answer.Rejected)
             {
                 Unauthorized = true;
                 Status = "다시 로그인 필요";
                 return;
+            }
+            if (answer.Token is not { } token)
+            {
+                Status = "재연결 대기";
+                try { await Task.Delay(_backoffMs(attempt), ct); }
+                catch (OperationCanceledException) { return; }
+                continue; // keep forceRefresh: the relay's rejection still stands
             }
 
             var ws = new ClientWebSocket();
@@ -93,9 +127,13 @@ public sealed class RoomClient : IAsyncDisposable
                 if (ws.CloseStatus == (WebSocketCloseStatus)4001) forceRefresh = true;
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
-            catch (OperationCanceledException) { /* connect timed out: back off and retry */ }
+            catch (OperationCanceledException) { LastError = "connect timeout"; /* back off and retry */ }
             catch (WebSocketException) when (ws.HttpStatusCode == HttpStatusCode.Unauthorized) { unauthorized = true; }
-            catch (Exception) { /* network error: fall through to backoff */ }
+            catch (Exception e)
+            {
+                // Network error, or an HTTP answer such as 503 (relay could not fetch auth keys) or 404 (wrong URL).
+                LastError = ws.HttpStatusCode != 0 ? $"HTTP {(int)ws.HttpStatusCode}" : e.GetType().Name;
+            }
             finally { _ws = null; ws.Dispose(); }
 
             if (unauthorized)
@@ -112,7 +150,7 @@ public sealed class RoomClient : IAsyncDisposable
             }
 
             Status = "재연결 대기";
-            try { await Task.Delay(ReconnectBackoff.DelayMs(attempt), ct); }
+            try { await Task.Delay(_backoffMs(attempt), ct); }
             catch (OperationCanceledException) { return; }
         }
     }
@@ -167,7 +205,20 @@ public sealed class RoomClient : IAsyncDisposable
         }
     }
 
-    public Task SendAsync(string json) => _ws is { State: WebSocketState.Open } ws ? SendRaw(ws, json, _life.Token) : Task.CompletedTask;
+    /// <summary>
+    /// Sends one message. False when not connected or the socket died mid-send (e.g. during a reconnect);
+    /// never throws, so fire-and-forget callers cannot lose an exception.
+    /// </summary>
+    public async Task<bool> SendAsync(string json)
+    {
+        if (_ws is not { State: WebSocketState.Open } ws) return false;
+        try { await SendRaw(ws, json, _life.Token); return true; }
+        catch (Exception e) when (e is WebSocketException or ObjectDisposedException or OperationCanceledException or InvalidOperationException)
+        {
+            LastError = $"send {e.GetType().Name}";
+            return false;
+        }
+    }
 
     async Task SendRaw(ClientWebSocket ws, string text, CancellationToken ct)
     {

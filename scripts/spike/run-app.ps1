@@ -6,8 +6,8 @@ param(
   [string[]]$Extra = @()
 )
 $ErrorActionPreference = "Stop"
-$godot = "C:\Users\ljsn1\AppData\Local\Microsoft\WinGet\Packages\GodotEngine.GodotEngine.Mono_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7.2-stable_mono_win64\Godot_v4.7.2-stable_mono_win64_console.exe"
-$app = "C:\Users\ljsn1\Desktop\Project\HANGBAR\client\app"
+$godot = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\GodotEngine.GodotEngine.Mono_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7.2-stable_mono_win64\Godot_v4.7.2-stable_mono_win64_console.exe"
+$app = (Resolve-Path (Join-Path $PSScriptRoot "..\..\client\app")).Path
 Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
 $p = Start-Process -FilePath $godot -ArgumentList (@("--path", $app) + $Extra) -RedirectStandardOutput $Log -RedirectStandardError "$Log.err" -PassThru -WindowStyle Hidden
 Start-Sleep -Seconds $Seconds

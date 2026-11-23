@@ -1,6 +1,6 @@
 param([int]$Seconds = 180, [int]$Warmup = 20, [string]$Out = "measure.csv")
 # Measures the exported release build from outside: average CPU % (all cores) and working set, per state.
-$exe = "C:\Users\ljsn1\Desktop\Project\HANGBAR\client\app\export\Hangbar.exe"
+$exe = (Join-Path $PSScriptRoot "..\..\client\app\export\Hangbar.exe")
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $states = @(
   @{ Name = "normal_1_figure";   Env = @{ HANGBAR_CHAT = "0" } },

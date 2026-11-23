@@ -10,6 +10,9 @@ namespace Hangbar.App.Net;
 
 public sealed record Session(string AccessToken, string RefreshToken, DateTimeOffset ExpiresAt, string UserId);
 
+/// <summary>Session on success. Rejected=true only when Supabase refused the grant (400/401/403); otherwise retryable.</summary>
+public readonly record struct SessionResult(Session? Session, bool Rejected);
+
 /// <summary>
 /// Google sign-in through Supabase with PKCE and a loopback redirect (design §8-1), plus token refresh.
 /// The callback listener is a tiny TCP server on 127.0.0.1 (HttpListener can need a URL ACL for 127.0.0.1).
@@ -58,14 +61,20 @@ public sealed class AuthLoopback
                          $"&redirect_to={Uri.EscapeDataString(redirect)}" +
                          $"&code_challenge={Pkce.ChallengeS256(verifier)}&code_challenge_method=s256");
 
-            var (cb, stream, client) = await callbacks.Reader.ReadAsync(stop.Token);
-            using (client)
+            // Any web page or local process can hit /callback, so a callback that does not yield a session
+            // (error, bogus or stale code) is answered with the failure page and we keep waiting for the real one
+            // until the timeout (ECC review). Cost: a genuine cancel at Google also waits out the timeout.
+            while (true)
             {
-                Session? session = null;
-                if (cb.Code is { } code) session = await ExchangeAsync(code, verifier, stop.Token);
-                else Log?.Invoke($"[auth] sign-in failed: {cb.Error}");
-                await Respond(stream, 200, session is null ? FailPage : DonePage, stop.Token);
-                return session;
+                var (cb, stream, client) = await callbacks.Reader.ReadAsync(stop.Token);
+                using (client)
+                {
+                    Session? session = null;
+                    if (cb.Code is { } code) session = await ExchangeAsync(code, verifier, stop.Token);
+                    else Log?.Invoke($"[auth] callback without code ({cb.Error}); still waiting");
+                    await Respond(stream, 200, session is null ? FailPage : DonePage, stop.Token);
+                    if (session is not null) return session;
+                }
             }
         }
         catch (OperationCanceledException)
@@ -82,8 +91,8 @@ public sealed class AuthLoopback
         }
     }
 
-    /// <summary>Exchanges a refresh token for a new session. Null when Supabase rejects it or the network fails.</summary>
-    public async Task<Session?> RefreshAsync(string refreshToken, CancellationToken ct)
+    /// <summary>Exchanges a refresh token for a new session. Network, timeout and server errors come back as retryable.</summary>
+    public async Task<SessionResult> RefreshAsync(string refreshToken, CancellationToken ct)
     {
         using var req = new HttpRequestMessage(HttpMethod.Post, $"{_supabaseUrl}/auth/v1/token?grant_type=refresh_token")
         {
@@ -175,33 +184,48 @@ public sealed class AuthLoopback
         {
             Content = JsonContent.Create(new { auth_code = code, code_verifier = verifier }),
         };
-        var s = await SendForSession(req, "token exchange", ct);
+        var s = (await SendForSession(req, "token exchange", ct)).Session;
         if (s is not null) Log?.Invoke($"[auth] signed in user={s.UserId[..Math.Min(8, s.UserId.Length)]}");
         return s;
     }
 
-    async Task<Session?> SendForSession(HttpRequestMessage req, string what, CancellationToken ct)
+    /// <summary>Never throws except for cancellation by <paramref name="ct"/>; every other failure is logged and returned.</summary>
+    async Task<SessionResult> SendForSession(HttpRequestMessage req, string what, CancellationToken ct)
     {
         req.Headers.Add("apikey", _publishableKey);
-        HttpResponseMessage res;
-        try { res = await _http.SendAsync(req, ct); }
+        try
+        {
+            using var res = await _http.SendAsync(req, ct);
+            if (!res.IsSuccessStatusCode)
+            {
+                int status = (int)res.StatusCode;
+                Log?.Invoke($"[auth] {what} failed: HTTP {status}");
+                return new SessionResult(null, Hangbar.Core.Net.RefreshResponse.IsRejection(status));
+            }
+            using var doc = JsonDocument.Parse(await res.Content.ReadAsStringAsync(ct));
+            var root = doc.RootElement;
+            return new SessionResult(new Session(
+                root.GetProperty("access_token").GetString()!,
+                root.GetProperty("refresh_token").GetString()!,
+                DateTimeOffset.FromUnixTimeSeconds(root.GetProperty("expires_at").GetInt64()),
+                root.GetProperty("user").GetProperty("id").GetString()!), false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         catch (HttpRequestException e)
         {
             Log?.Invoke($"[auth] {what} failed: network ({e.HttpRequestError})");
-            return null;
+            return new SessionResult(null, false);
         }
-        using var _ = res;
-        if (!res.IsSuccessStatusCode)
+        catch (TaskCanceledException)
         {
-            Log?.Invoke($"[auth] {what} failed: HTTP {(int)res.StatusCode}");
-            return null;
+            Log?.Invoke($"[auth] {what} failed: timeout");
+            return new SessionResult(null, false);
         }
-        using var doc = JsonDocument.Parse(await res.Content.ReadAsStringAsync(ct));
-        var root = doc.RootElement;
-        return new Session(
-            root.GetProperty("access_token").GetString()!,
-            root.GetProperty("refresh_token").GetString()!,
-            DateTimeOffset.FromUnixTimeSeconds(root.GetProperty("expires_at").GetInt64()),
-            root.GetProperty("user").GetProperty("id").GetString()!);
+        catch (Exception e) when (e is JsonException or KeyNotFoundException or InvalidOperationException or FormatException)
+        {
+            // A 200 with a body we do not understand: Supabase changed or a proxy answered. Retryable, and visible.
+            Log?.Invoke($"[auth] {what} failed: unexpected response ({e.GetType().Name})");
+            return new SessionResult(null, false);
+        }
     }
 }

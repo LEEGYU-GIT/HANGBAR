@@ -56,4 +56,13 @@ public class GeometryTests
         Assert.Equal(5, r.DistanceTo(new PointI(15, 12)));
         Assert.Equal(3, r.DistanceTo(new PointI(-3, 4)));
     }
+
+    [Fact]
+    public void DistanceTo_is_never_zero_just_past_the_exclusive_edges()
+    {
+        // ECC review: Right/Bottom are exclusive, so (10,5) is outside a 10-wide rect and must not read as "inside".
+        var r = new RectI(0, 0, 10, 10);
+        Assert.Equal(1, r.DistanceTo(new PointI(10, 5)));
+        Assert.Equal(1, r.DistanceTo(new PointI(5, 10)));
+    }
 }

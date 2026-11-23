@@ -1,6 +1,6 @@
 param([ValidateSet("start","stop")][string]$Action, [string]$Log = "relay.log")
 # Starts/stops the local wrangler dev relay on 127.0.0.1:8787, including its workerd children.
-$server = "C:\Users\ljsn1\Desktop\Project\HANGBAR\server"
+$server = (Resolve-Path (Join-Path $PSScriptRoot "..\..\server")).Path
 function Stop-Relay {
   Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $_.CommandLine -like "*HANGBAR\server\node_modules\wrangler*" } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
   Get-Process workerd -ErrorAction SilentlyContinue | Stop-Process -Force

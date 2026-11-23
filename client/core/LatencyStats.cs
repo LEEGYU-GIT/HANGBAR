@@ -6,20 +6,26 @@ public sealed class LatencyStats
     const int Capacity = 200;
     readonly Queue<double> _samples = new();
 
-    public int Count => _samples.Count;
+    // Add runs on the socket receive thread, reads on the game thread (ECC review), so every access locks.
+    public int Count { get { lock (_samples) return _samples.Count; } }
     public double P50 => Percentile(50);
     public double P95 => Percentile(95);
 
     public void Add(double ms)
     {
-        _samples.Enqueue(ms);
-        while (_samples.Count > Capacity) _samples.Dequeue();
+        lock (_samples)
+        {
+            _samples.Enqueue(ms);
+            while (_samples.Count > Capacity) _samples.Dequeue();
+        }
     }
 
     double Percentile(int p)
     {
-        if (_samples.Count == 0) return 0;
-        var sorted = _samples.OrderBy(x => x).ToArray();
+        double[] sorted;
+        lock (_samples) sorted = _samples.ToArray();
+        if (sorted.Length == 0) return 0;
+        Array.Sort(sorted);
         int rank = (int)Math.Ceiling(p / 100.0 * sorted.Length);
         return sorted[Math.Clamp(rank, 1, sorted.Length) - 1];
     }

@@ -74,7 +74,8 @@ public partial class Main : Node
             if (System.Environment.GetEnvironmentVariable("HANGBAR_DEV_TOKEN") is { Length: > 0 } devToken)
             {
                 int devRejections = 0;
-                room.Connect(relay, force => Task.FromResult(force && ++devRejections > 1 ? null : devToken));
+                room.Connect(relay, force => Task.FromResult(force && ++devRejections > 1
+                    ? Hangbar.Core.Net.TokenResult.SignInAgain : Hangbar.Core.Net.TokenResult.Ok(devToken)));
             }
         }
 
@@ -136,7 +137,7 @@ public partial class Main : Node
         }
         catch (Exception e)
         {
-            GD.Print($"[auth] error {e.GetType().Name}");
+            GD.Print($"[auth] error {e.GetType().Name}: {e.Message}"); // e.g. all sign-in ports busy
             Chat?.SetStatus("로그인 오류");
         }
     }
@@ -148,19 +149,23 @@ public partial class Main : Node
 
     /// <summary>
     /// Token for (re)connecting: refreshed when it expires within a minute or when the relay rejected it
-    /// (review I4). Null when there is no session or the refresh token is no longer accepted.
+    /// (review I4). SignInAgain only when there is no session or Supabase refused the refresh token;
+    /// a network or server hiccup is TryLater so the room client keeps retrying (ECC review).
     /// </summary>
-    async Task<string?> CurrentTokenAsync(bool forceRefresh)
+    async Task<Hangbar.Core.Net.TokenResult> CurrentTokenAsync(bool forceRefresh)
     {
         await _refreshLock.WaitAsync();
         try
         {
-            if (Session is not { } s || _auth is null) return null;
-            if (!forceRefresh && !TokenRefresh.ShouldRefresh(s.ExpiresAt, DateTimeOffset.UtcNow)) return s.AccessToken;
-            var next = await _auth.RefreshAsync(s.RefreshToken, CancellationToken.None);
-            if (next is null) return null;
+            if (Session is not { } s || _auth is null) return Hangbar.Core.Net.TokenResult.SignInAgain;
+            if (!forceRefresh && !TokenRefresh.ShouldRefresh(s.ExpiresAt, DateTimeOffset.UtcNow))
+                return Hangbar.Core.Net.TokenResult.Ok(s.AccessToken);
+            using var limit = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+            var r = await _auth.RefreshAsync(s.RefreshToken, limit.Token);
+            if (r.Session is not { } next)
+                return r.Rejected ? Hangbar.Core.Net.TokenResult.SignInAgain : Hangbar.Core.Net.TokenResult.TryLater;
             Session = next;
-            return next.AccessToken;
+            return Hangbar.Core.Net.TokenResult.Ok(next.AccessToken);
         }
         finally { _refreshLock.Release(); }
     }

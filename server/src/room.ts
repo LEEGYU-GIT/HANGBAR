@@ -10,6 +10,24 @@ interface Attachment {
   exp: number;
 }
 
+/** The part of a hibernatable WebSocket the relay loop uses (lets tests pass fakes). */
+export type RelaySocket = Pick<WebSocket, "deserializeAttachment" | "send" | "close">;
+
+/** Sends `out` to every member but the sender; members whose token expired are closed with 4001. */
+export function relay(sockets: Iterable<RelaySocket>, sender: RelaySocket, out: string, now: number): void {
+  for (const other of sockets) {
+    if (other === sender) continue;
+    // One member's socket may already be closing; that must not cost everyone after it the event.
+    try {
+      const them = other.deserializeAttachment() as Attachment | null;
+      if (!them || now >= them.exp * 1000) other.close(4001, "token expired");
+      else other.send(out);
+    } catch {
+      /* socket went away mid-relay; the runtime delivers its close event separately */
+    }
+  }
+}
+
 /**
  * One object per room. Relays events between members.
  * Makes no judgments (hit decisions belong to the thrower's PC, design §7-2).
@@ -53,17 +71,7 @@ export class RoomObject extends DurableObject {
     }
     if (RESERVED.has(msg.t as string)) return;
 
-    const out = JSON.stringify({ ...msg, from: me.userId });
-    const now = Date.now();
-    for (const other of this.ctx.getWebSockets()) {
-      if (other === ws) continue;
-      const them = other.deserializeAttachment() as Attachment | null;
-      if (!them || now >= them.exp * 1000) {
-        other.close(4001, "token expired");
-        continue;
-      }
-      other.send(out);
-    }
+    relay(this.ctx.getWebSockets(), ws, JSON.stringify({ ...msg, from: me.userId }), Date.now());
   }
 
   async webSocketClose(ws: WebSocket, code: number, reason: string): Promise<void> {

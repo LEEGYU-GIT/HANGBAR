@@ -23,8 +23,11 @@ export default {
 
     const auth = request.headers.get("Authorization") ?? "";
     const bearer = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-    const user = bearer ? await verifyToken(bearer, env) : null;
-    if (!user) return new Response("unauthorized", { status: 401 });
+    const user = bearer ? await verifyToken(bearer, env) : ({ ok: false, reason: "invalid" } as const);
+    // 503 tells the client to back off and retry with the same token; only 401 means "get a new token".
+    if (!user.ok) return user.reason === "unavailable"
+      ? new Response("auth keys unavailable", { status: 503, headers: { "Retry-After": "5" } })
+      : new Response("unauthorized", { status: 401 });
 
     // Membership check against Supabase rooms comes after M0 (rooms table not built yet).
     const stub = env.ROOM.get(env.ROOM.idFromName(roomId));
