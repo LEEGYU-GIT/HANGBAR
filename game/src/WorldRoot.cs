@@ -42,7 +42,7 @@ public partial class WorldRoot : Node3D
 
         int c = Map.Size / 2;
         float bs = ChunkMesher.BlockSize;
-        SpawnPoint = new Vector3((c + 0.5f) * bs, Math.Max(Map.Height[Map.Index(c, c)], Map.WaterLevel) * bs + 0.5f, (c + 0.5f) * bs);
+        SpawnPoint = new Vector3((c + 0.5f) * bs, Map.StandHeight(c, c) * bs + 0.5f, (c + 0.5f) * bs);
 
         SetUpEnvironment();
         GD.Print($"[world] photo={photo.Width}x{photo.Height} map={Map.Size} seed={Map.Seed:x16} chunks={ChunkNodes} tris={tris} gen={genMs} mesh={meshMs}");
@@ -63,7 +63,15 @@ public partial class WorldRoot : Node3D
         var probe = new PerfProbe();
         probe.Init(this, bench, Args.GetValueOrDefault("out"));
         AddChild(probe);
-        if (Args.TryGetValue("shots", out var dir)) probe.TakeShots(dir, ImageFit.Prepare(_photo, Map.Size));
+        if (Args.TryGetValue("shots", out var dir))
+        {
+            if (ShotOutput.Problem(dir, Args.GetValueOrDefault("photo")) is { } problem)
+            {
+                GD.Print($"[shots] not saved: {problem}");
+                GetTree().Quit(1);
+            }
+            else probe.TakeShots(dir, ImageFit.Prepare(_photo, Map.Size));
+        }
     }
 
     public override void _PhysicsProcess(double delta)

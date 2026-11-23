@@ -62,15 +62,15 @@
 
 ## 사용자 확인 목록
 
-실행 명령은 PowerShell에서 아래처럼 쓴다.
+실행 명령은 저장소 폴더(HANGBAR)에서 PowerShell로 아래처럼 쓴다.
 
 ```
-C:\Users\ljsn1\Desktop\Project\HANGBAR\scripts\game\run.ps1 -Photo "사진 경로"
-C:\Users\ljsn1\Desktop\Project\HANGBAR\scripts\game\shots.ps1 -Photo "사진 경로" -Out "저장할 폴더"
-C:\Users\ljsn1\Desktop\Project\HANGBAR\scripts\game\bench.ps1
+.\scripts\game\run.ps1 -Photo "사진 경로"
+.\scripts\game\shots.ps1 -Photo "사진 경로" -Out "저장할 폴더"
+.\scripts\game\bench.ps1
 ```
 
-`shots.ps1`의 저장 폴더는 저장소 밖으로 둔다. 본인 사진은 저장소에 올리지 않는다.
+`shots.ps1`의 저장 폴더는 저장소 밖의 빈 폴더로 둔다. 사진이 있는 폴더나 이미 스크린샷이 있는 폴더는 거절한다. 본인 사진은 저장소에 올리지 않는다.
 
 - [ ] 본인 사진 서너 장(풍경, 인물, 음식, 화면 캡처)으로 `shots.ps1`을 돌려 "내 사진으로 만든 세계" 같은지 본다. 같은 폴더에 `photo.png`(준비된 원래 사진)가 함께 저장된다.
 - [ ] `run.ps1`로 걸어 본다. 클릭하면 마우스가 잡히고 Esc로 놓인다. WASD 이동, Shift 달리기, Space 점프, F3 성능 표시.

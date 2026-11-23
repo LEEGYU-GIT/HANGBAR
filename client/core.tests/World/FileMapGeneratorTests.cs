@@ -78,6 +78,20 @@ public class FileMapGeneratorTests
     }
 
     [Fact]
+    public void Stand_height_covers_the_whole_footprint()
+    {
+        // Final review: spawning on the centre column alone put the 0.3 m body inside a taller neighbour.
+        var h = Enumerable.Repeat(8, 5 * 5).ToArray();
+        h[1 * 5 + 2] = 13;             // column next to the centre (2,2) is 5 blocks taller
+        var w = new bool[25];
+        w[3 * 5 + 3] = true;           // a water column: standing height is its water level, not its floor
+        var m = new FileMap(5, 8, 0, h, new uint[25], w);
+        Assert.Equal(13, m.StandHeight(2, 2));
+        Assert.Equal(8, m.StandHeight(4, 4));
+        Assert.Equal(8, m.StandHeight(0, 4)); // edge cells clamp, no exception
+    }
+
+    [Fact]
     public void Color_is_the_prepared_photo_rgb()
     {
         var m = FileMapGenerator.Generate(Solid(64, 0xC86432FF), S);

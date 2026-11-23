@@ -21,6 +21,22 @@ public sealed class FileMap
     }
 
     public int Index(int x, int z) => z * Size + x;
+
+    /// <summary>
+    /// Height (in blocks) a body standing on column (x, z) rests at: the highest ground or water surface over the
+    /// 3×3 footprint, so a 0.3 m-radius body never starts inside a taller neighbour column.
+    /// </summary>
+    public int StandHeight(int x, int z)
+    {
+        int best = 0;
+        for (int dz = -1; dz <= 1; dz++)
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                int i = Index(Math.Clamp(x + dx, 0, Size - 1), Math.Clamp(z + dz, 0, Size - 1));
+                best = Math.Max(best, Water[i] ? Math.Max(Height[i], WaterLevel) : Height[i]);
+            }
+        return best;
+    }
 }
 
 /// <summary>World identity from photo content, never from file names or paths.</summary>
