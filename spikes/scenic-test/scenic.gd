@@ -147,7 +147,7 @@ func _height(x: float, z: float, qi: int, ri: int) -> float:
 	h = minf(h, 26.0)
 	h += jit * (1.6 - front * 1.1)
 	if z < -6.5 and z > -12.5 and absf(x) < NOTCH:
-		h = minf(h, lip - 0.25)                      # the channel feeding the falls
+		return lip - 0.25                            # flat channel floor: the water leaves one clean edge
 	return snappedf(h, 0.3)                          # stepped tops, like the real thing
 
 func _basalt() -> void:
@@ -237,29 +237,55 @@ func _basalt() -> void:
 
 # ---------------------------------------------------------------- water
 
+const BRINK_Z := -7.75                # front face of the first channel column row
+var land := Vector3.ZERO              # where the falling water meets the pool
+
+func _fall_path() -> PackedVector3Array:
+	# One continuous path: flat stream -> rounded brink -> drop leaning slightly out -> below the surface.
+	var pts := PackedVector3Array()
+	var top := lip - 0.2
+	var r := 0.8
+	for i in 8:
+		pts.append(Vector3(0, top, BRINK_Z - 2.4 + 2.4 * i / 8.0))
+	for i in 13:
+		var a := PI * 0.5 * i / 12.0
+		pts.append(Vector3(0, top - r * (1.0 - cos(a)), BRINK_Z + r * sin(a)))
+	var y0 := top - r
+	var z1 := BRINK_Z + r
+	for i in range(1, 41):
+		var f := i / 40.0
+		pts.append(Vector3(0, lerpf(y0, -0.6, f), z1 + 0.9 * f * f))
+	var fs := y0 / (y0 + 0.6)                          # path fraction where y crosses 0
+	land = Vector3(0, 0, z1 + 0.9 * fs * fs)
+	return pts
+
 func _waterfall() -> void:
 	var mat := ShaderMaterial.new()
 	mat.shader = Shader.new()
 	mat.shader.code = FALL_SHADER
 	mat.set_shader_parameter("noise_tex", noise_tex)
-	var z0 := POOL_C.y - POOL_R.y * 0.97
+	var path := _fall_path()
+	var total := 0.0
+	var along := PackedFloat32Array([0.0])
+	for k in range(1, path.size()):
+		total += path[k].distance_to(path[k - 1])
+		along.append(total)
+	var rows := path.size() - 1
+	var cols := 14
 	for layer in 2:
 		var st := SurfaceTool.new()
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
-		var rows := 40
-		var cols := 12
-		var w := NOTCH * (1.7 if layer == 0 else 1.45)
-		for j in rows + 1:
-			var f := float(j) / rows
-			# leaves the lip almost horizontally, then drops (a soft parabola)
-			var y := lip * (1.0 - f)
-			var z := z0 + 0.35 * layer + 1.3 * f + 0.45   # clear of the hex corners at the lip
+		var w := NOTCH * (0.95 if layer == 0 else 0.82)
+		var push := 0.12 * layer                        # second sheet slightly in front
+		for j in path.size():
+			var p := path[j]
+			var s := along[j] / total
 			for i in cols + 1:
 				var u := float(i) / cols
-				var x := (u - 0.5) * 2.0 * w * (1.0 + f * 0.25)
-				st.set_uv(Vector2(u, f * lip * 0.25 + layer * 0.37))
-				st.set_color(Color(f, 1, 1, 1.0 - layer * 0.35))   # r = how far down the drop
-				st.add_vertex(Vector3(x, y, z))
+				var x := (u - 0.5) * 2.0 * w * (1.0 + maxf(0.0, s - 0.2) * 0.3)
+				st.set_uv(Vector2(u, along[j] * 0.22 + layer * 0.37))
+				st.set_color(Color(s, 1, 1, 1.0 - layer * 0.35))   # r = position along the path
+				st.add_vertex(Vector3(x, p.y, p.z + push))
 		for j in rows:
 			for i in cols:
 				var a := j * (cols + 1) + i
@@ -278,17 +304,60 @@ func _waterfall() -> void:
 	# the stream on top that feeds it
 	var stream := MeshInstance3D.new()
 	var pm := PlaneMesh.new()
-	pm.size = Vector2(NOTCH * 2.0, 4.6)
+	pm.size = Vector2(NOTCH * 2.2, 4.4)
 	stream.mesh = pm
 	var smat := ShaderMaterial.new()
 	smat.shader = Shader.new()
 	smat.shader.code = WATER_SHADER
 	smat.set_shader_parameter("normal_a", _noise(256, true, 0.03))
 	smat.set_shader_parameter("normal_b", _noise(256, true, 0.05))
-	smat.set_shader_parameter("flow", Vector2(0.0, 0.6))
+	smat.set_shader_parameter("flow", Vector2(0.0, -0.6))
 	stream.material_override = smat
-	stream.position = Vector3(0, lip - 0.2, z0 - 2.3)
+	stream.position = Vector3(0, lip - 0.22, BRINK_Z - 2.2)    # flush with the start of the sheet
 	add_child(stream)
+	_splash()
+
+func _splash() -> void:
+	# white water thrown up where the sheet hits the pool: hides the join and sells the impact
+	var p := GPUParticles3D.new()
+	p.amount = 260
+	p.lifetime = 1.1
+	p.preprocess = 1.0
+	var pm := ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(NOTCH * 1.1, 0.05, 0.35)
+	pm.direction = Vector3(0, 1, 0.5)
+	pm.spread = 40.0
+	pm.initial_velocity_min = 1.5
+	pm.initial_velocity_max = 4.0
+	pm.gravity = Vector3(0, -9.8, 0)
+	pm.scale_min = 0.35
+	pm.scale_max = 0.9
+	var fade := Gradient.new()
+	fade.set_color(0, Color(1, 1, 1, 0.9))
+	fade.set_color(1, Color(1, 1, 1, 0.0))
+	var ramp := GradientTexture1D.new()
+	ramp.gradient = fade
+	pm.color_ramp = ramp
+	p.process_material = pm
+	var quad := QuadMesh.new()
+	var qm := StandardMaterial3D.new()
+	qm.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	qm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	qm.vertex_color_use_as_albedo = true
+	var g := Gradient.new()
+	g.set_color(0, Color(1, 1, 1, 0.75))
+	g.set_color(1, Color(1, 1, 1, 0.0))
+	var gt := GradientTexture2D.new()
+	gt.gradient = g
+	gt.fill = GradientTexture2D.FILL_RADIAL
+	gt.fill_from = Vector2(0.5, 0.5)
+	gt.fill_to = Vector2(0.5, 0.0)
+	qm.albedo_texture = gt
+	quad.material = qm
+	p.draw_pass_1 = quad
+	p.position = land + Vector3(0, 0.05, 0)
+	add_child(p)
 
 func _pool() -> void:
 	var water := MeshInstance3D.new()
@@ -302,13 +371,13 @@ func _pool() -> void:
 	mat.shader.code = WATER_SHADER
 	mat.set_shader_parameter("normal_a", _noise(256, true, 0.03))
 	mat.set_shader_parameter("normal_b", _noise(256, true, 0.05))
-	mat.set_shader_parameter("fall_pos", Vector2(0.0, POOL_C.y - POOL_R.y * 0.95))
+	mat.set_shader_parameter("fall_pos", Vector2(land.x, land.z))
 	water.material_override = mat
 	water.position = Vector3(POOL_C.x, 0.0, POOL_C.y)
 	add_child(water)
 
 func _mist() -> void:
-	var base := Vector3(0, 0.6, POOL_C.y - POOL_R.y * 0.85)
+	var base := land + Vector3(0, 0.6, 0.6)
 	var p := GPUParticles3D.new()
 	p.amount = 220
 	p.lifetime = 4.0
@@ -513,10 +582,11 @@ void fragment() {
 	float streak = s1 * 0.55 + s2 * 0.45;
 	// ragged sides and a soft top so the sheet reads as falling water, not a lit panel
 	float edge = smoothstep(0.0, 0.22 + 0.15 * s2, UV.x) * smoothstep(1.0, 0.78 - 0.15 * s1, UV.x);
-	float top = smoothstep(0.0, 0.08, COLOR.r);
+	// the flat run is covered by the stream surface; the sheet fades in over the brink instead of a bright edge
+	float top = smoothstep(0.1, 0.24, COLOR.r);
 	vec3 c = mix(vec3(0.36, 0.5, 0.56), vec3(0.95, 0.97, 1.0), smoothstep(0.4, 0.75, streak));
 	ALBEDO = c;
-	EMISSION = c * 0.03;
+	EMISSION = c * 0.015;
 	ROUGHNESS = 0.2;
 	ALPHA = clamp(0.12 + smoothstep(0.32, 0.78, streak) * 0.85, 0.0, 1.0) * edge * top * COLOR.a;
 }
