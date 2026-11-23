@@ -30,6 +30,7 @@ public partial class WorldRoot : Node3D
             if (photo is null) GD.Print("[world] photo unreadable, using sample");
         }
         photo ??= SamplePhotos.Meadow();
+        _photo = photo;
 
         Map = FileMapGenerator.Generate(photo, new MapGenSettings());
         World = VoxelWorld.FromFileMap(Map);
@@ -49,6 +50,7 @@ public partial class WorldRoot : Node3D
     }
 
     public Player Player { get; private set; } = null!;
+    PixelImage _photo = null!;
 
     void OnWorldReady()
     {
@@ -61,6 +63,7 @@ public partial class WorldRoot : Node3D
         var probe = new PerfProbe();
         probe.Init(this, bench, Args.GetValueOrDefault("out"));
         AddChild(probe);
+        if (Args.TryGetValue("shots", out var dir)) probe.TakeShots(dir, ImageFit.Prepare(_photo, Map.Size));
     }
 
     public override void _PhysicsProcess(double delta)

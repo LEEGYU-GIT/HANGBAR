@@ -46,6 +46,51 @@ public partial class PerfProbe : CanvasLayer
         }
     }
 
+    /// <summary>
+    /// --shots=DIR: saves overview.png (30 m up, oblique), ground.png (behind the character at eye height),
+    /// top.png (straight down, orthographic, to lay next to the photo) and photo.png (the prepared 192×192 photo), then quits.
+    /// File names never include the photo's name.
+    /// </summary>
+    public async void TakeShots(string dir, Hangbar.Core.World.PixelImage prepared)
+    {
+        System.IO.Directory.CreateDirectory(dir);
+        _world.Player.InputEnabled = false;
+        var cam = new Camera3D { Fov = 60, Far = 400 };
+        _world.AddChild(cam);
+        float size = _world.Map.Size * Hangbar.Core.World.ChunkMesher.BlockSize, half = size / 2;
+        var center = new Vector3(half, 0, half);
+        var feet = _world.Player.GlobalPosition;
+
+        async Task Shot(string name)
+        {
+            for (int i = 0; i < 20; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            GetViewport().GetTexture().GetImage().SavePng(System.IO.Path.Combine(dir, name));
+        }
+
+        await ToSignal(GetTree().CreateTimer(3.0), SceneTreeTimer.SignalName.Timeout);
+        cam.MakeCurrent();
+        cam.LookAtFromPosition(center + new Vector3(-half * 0.9f, 30, half * 1.1f), center, Vector3.Up);
+        await Shot("overview.png");
+        _world.Player.Camera.MakeCurrent();
+        await Shot("ground.png");
+        cam.MakeCurrent();
+        cam.Projection = Camera3D.ProjectionType.Orthogonal;
+        cam.Size = size;
+        cam.LookAtFromPosition(center + new Vector3(0, 60, 0.001f), center, new Vector3(0, 0, -1));
+        await Shot("top.png");
+
+        var img = Image.CreateEmpty(prepared.Width, prepared.Height, false, Image.Format.Rgba8);
+        for (int y = 0; y < prepared.Height; y++)
+            for (int x = 0; x < prepared.Width; x++)
+            {
+                var (r, g, b, a) = Hangbar.Core.World.PixelImage.Unpack(prepared[x, y]);
+                img.SetPixel(x, y, Color.Color8((byte)r, (byte)g, (byte)b, (byte)a));
+            }
+        img.SavePng(System.IO.Path.Combine(dir, "photo.png"));
+        GD.Print($"[shots] saved 4 images ({feet.Y:0.00} m spawn height)");
+        GetTree().Quit();
+    }
+
     public override void _UnhandledInput(InputEvent e)
     {
         if (e is InputEventKey { Pressed: true, Keycode: Key.F3 }) _hud.Visible = !_hud.Visible;
