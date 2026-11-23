@@ -48,15 +48,77 @@ public partial class WorldRoot : Node3D
         OnWorldReady();
     }
 
-    /// <summary>Hook for the player and probes added in later steps.</summary>
-    partial void OnWorldReady();
+    public Player Player { get; private set; } = null!;
+
+    void OnWorldReady()
+    {
+        AddEdgeWalls();
+        Player = new Player { Position = SpawnPoint };
+        AddChild(Player);
+        if (Args.TryGetValue("walktest", out var secs) && float.TryParse(secs, out var s)) _ = WalkTest(s);
+    }
+
+    public override void _PhysicsProcess(double delta)
+    {
+        if (Player is not null && Player.GlobalPosition.Y < -5f)
+        {
+            Player.GlobalPosition = SpawnPoint;
+            Player.Velocity = Vector3.Zero;
+        }
+    }
+
+    /// <summary>Invisible walls 20 m high just outside the four map edges.</summary>
+    void AddEdgeWalls()
+    {
+        float size = Map.Size * ChunkMesher.BlockSize, h = 20f, t = 1f;
+        foreach (var (pos, ext) in new[]
+        {
+            (new Vector3(size / 2, h / 2, -t / 2), new Vector3(size + 2 * t, h, t)),
+            (new Vector3(size / 2, h / 2, size + t / 2), new Vector3(size + 2 * t, h, t)),
+            (new Vector3(-t / 2, h / 2, size / 2), new Vector3(t, h, size)),
+            (new Vector3(size + t / 2, h / 2, size / 2), new Vector3(t, h, size)),
+        })
+        {
+            var body = new StaticBody3D { Position = pos };
+            body.AddChild(new CollisionShape3D { Shape = new BoxShape3D { Size = ext } });
+            AddChild(body);
+        }
+    }
+
+    /// <summary>
+    /// Dev check for the step-up rule (plan Review Focus 4): walks toward the map's highest column for the given seconds
+    /// and prints how far and how high the player got. A walker stuck on 0.25 m ledges barely moves.
+    /// </summary>
+    async Task WalkTest(float seconds)
+    {
+        await ToSignal(GetTree().CreateTimer(1.0), SceneTreeTimer.SignalName.Timeout);
+        int best = 0;
+        for (int i = 1; i < Map.Height.Length; i++) if (!Map.Water[i] && Map.Height[i] > Map.Height[best]) best = i;
+        var target = new Vector3((best % Map.Size + 0.5f) * ChunkMesher.BlockSize, 0, (best / Map.Size + 0.5f) * ChunkMesher.BlockSize);
+        var start = Player.GlobalPosition;
+        Player.AutoWalk = (target - start) with { Y = 0 };
+        for (float t = 0; t < seconds; t += 0.5f)
+        {
+            await ToSignal(GetTree().CreateTimer(0.5), SceneTreeTimer.SignalName.Timeout);
+            var p = Player.GlobalPosition;
+            int gx = (int)(p.X / ChunkMesher.BlockSize), gz = (int)(p.Z / ChunkMesher.BlockSize);
+            int ground = gx >= 0 && gz >= 0 && gx < Map.Size && gz < Map.Size ? Map.Height[Map.Index(gx, gz)] : -1;
+            GD.Print($"[walktest] t={t + 0.5f:0.0} pos=({p.X:0.00},{p.Y:0.00},{p.Z:0.00}) groundTop={ground * ChunkMesher.BlockSize:0.00} floor={Player.IsOnFloor()}");
+        }
+        var end = Player.GlobalPosition;
+        GD.Print($"[walktest] moved={(end - start).Slide(Vector3.Up).Length():0.00}m expected~{4.5f * seconds:0.0}m rise={end.Y - start.Y:0.00}m endFloor={Player.IsOnFloor()}");
+        Player.AutoWalk = null;
+        GetTree().Quit();
+    }
 
     int BuildChunks()
     {
-        var solidMat = new StandardMaterial3D { VertexColorUseAsAlbedo = true, Roughness = 0.9f };
+        // Block colors come straight from the photo, so they are sRGB, not linear.
+        var solidMat = new StandardMaterial3D { VertexColorUseAsAlbedo = true, VertexColorIsSrgb = true, Roughness = 0.9f };
         var waterMat = new StandardMaterial3D
         {
             VertexColorUseAsAlbedo = true,
+            VertexColorIsSrgb = true,
             Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
             CullMode = BaseMaterial3D.CullModeEnum.Disabled,
             Roughness = 0.1f,
@@ -131,8 +193,8 @@ public partial class WorldRoot : Node3D
         {
             SkyTopColor = new Color(0.3f, 0.5f, 0.78f),
             SkyHorizonColor = new Color(0.82f, 0.86f, 0.9f),
-            GroundHorizonColor = new Color(0.6f, 0.62f, 0.6f),
-            GroundBottomColor = new Color(0.2f, 0.2f, 0.2f),
+            GroundHorizonColor = new Color(0.82f, 0.86f, 0.9f),   // same as the sky horizon: no dark band past the map edge
+            GroundBottomColor = new Color(0.6f, 0.66f, 0.72f),
         };
         var env = new Godot.Environment
         {
