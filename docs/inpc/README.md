@@ -10,11 +10,13 @@
   - G0 완료: [G0 결과](g0-results.md). 사진 한 장으로 블록 세계를 만들고 걷는다. 내장 그래픽 1080p 평균 47fps.
   - G0을 해 보고 방향을 바꿨다. 사진을 높이 지도로 쓰지 않고 "재료"로 쓴다. 큰 주제는 로컬 AI 모델로 알아내 바이옴 일곱 가지(들판, 도로, 물가, 숲, 도시, 실내, 교통) 중 하나를 고르고, 색과 분위기를 입히고, 사진은 벽화로 세운다.
   - **다음 할 일: G0.5.** [G0.5 계획](../superpowers/plans/2026-11-24-inpc-g05-themes-and-biomes.md). 사용자가 "직접 진행" 방식으로 실행하기로 했다(Claude가 한 세션에서 작업을 차례로 하고, 끝에 새 검토자 한 명이 전체를 본다).
+  - G0.5 진행(2026-11-24, 리눅스 서버): 브랜치 `inpc-g05`에서 Task 1·2·3·5를 완료하고 최종 검토 지적을 반영했다. 남은 작업은 Task 4(모델 실행기), Task 6(게임 연결), Task 7(사용자 사진으로 두 후보 비교)이다. 판단 기록은 각 커밋 메시지와 [모델 README](../../models/README.md)에 있다.
 - 아이디어와 결정의 원본: [아이디어 노트](ideas.md). 새 아이디어는 날짜별로 여기에 덧붙인다.
 
 ## 사용자가 해야 할 일
 
 - G0.5 Task 7: 시험용 사진 20~30장(풍경, 거리, 바다, 숲, 건물, 집, 카페, 가게, 지하철·버스, 음식, 화면 캡처)을 **저장소 밖** 폴더에 모은다. 저장소에는 올리지 않는다.
+- G0.5 Task 7 후보 선택 때: CLIP 모델 카드가 배포 용도를 "현재 범위 밖"으로 규정한 점(라이선스는 MIT)과 Places365의 출처 표시 조건(CC BY)을 함께 판단한다. 원문은 [모델 README](../../models/README.md)에 있다.
 - HANGBAR M0 쪽 남은 결정: 메모리 목표(200MB 대 실측 약 256MB), Supabase·Google 로그인 설정(이메일 가입과 익명 로그인은 끈다).
 
 ## 새 PC 준비
@@ -25,7 +27,7 @@ PowerShell에서:
 winget install Git.Git Microsoft.DotNet.SDK.8 GodotEngine.GodotEngine.Mono OpenJS.NodeJS.LTS Python.Python.3.11
 git clone https://github.com/LEEGYU-GIT/HANGBAR.git
 cd HANGBAR
-dotnet test client/core.tests          # Core 테스트 (102개 통과가 정상)
+dotnet test client/core.tests          # Core 테스트 (실패 0건이 정상)
 dotnet build game/Inpc.Game.sln        # 게임 빌드
 .\scripts\game\run.ps1                 # 기본 사진 세계 실행
 .\scripts\game\bench.ps1               # 성능 측정 (외장 그래픽 수치를 g0-results.md에 보태면 좋다)
@@ -35,7 +37,7 @@ dotnet build game/Inpc.Game.sln        # 게임 빌드
 - 스크립트 실행이 막히면 `powershell -ExecutionPolicy Bypass -File .\scripts\game\run.ps1`.
 - `dotnet`이 PATH에 없으면 `C:\Program Files\dotnet\dotnet.exe`로 부른다.
 - 서버(`server/`)를 만질 때만 `cd server; npm install; npm test`.
-- G0.5 Task 1에서 모델을 변환할 때 Python 가상환경(`python -m venv .venv`)을 쓴다. `.venv`와 모델 파일은 git에 올리지 않는다.
+- G0.5 모델 파일은 [모델 README](../../models/README.md)의 순서대로 준비한다. PyTorch는 필요하지 않다. `.venv`와 모델 파일은 git에 올리지 않는다.
 
 ## 지켜 온 규칙
 
