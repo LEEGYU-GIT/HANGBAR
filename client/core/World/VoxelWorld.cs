@@ -69,6 +69,34 @@ public sealed class VoxelWorld
         return w;
     }
 
+    /// <summary>
+    /// Terrain (the <see cref="FromFileMap"/> rule), then every building box, then the photo mural standing
+    /// <see cref="BiomeGenerator.MuralDistance"/> blocks north (−z) of the spawn, centred on it.
+    /// </summary>
+    public static VoxelWorld FromBiomeMap(BiomeMap m, PixelImage prepared, int sizeY = 48)
+    {
+        var t = m.Terrain;
+        var w = FromFileMap(t, sizeY);
+        foreach (var b in m.Buildings)
+        {
+            int ground = 0;
+            for (int z = Math.Max(0, b.Z); z < Math.Min(t.Size, b.Z + b.D); z++)
+                for (int x = Math.Max(0, b.X); x < Math.Min(t.Size, b.X + b.W); x++)
+                    ground = Math.Max(ground, t.Height[t.Index(x, z)]);
+            int bottom = ground + b.Lift, top = bottom + b.Height;
+            ushort solid = Block.Solid(b.Color), band = Block.Solid(Mix(b.Color, 0.72, 0));
+            bool windows = m.Biome == Biome.City && b.Lift == 0;
+            for (int z = Math.Max(0, b.Z); z < Math.Min(t.Size, b.Z + b.D); z++)
+                for (int x = Math.Max(0, b.X); x < Math.Min(t.Size, b.X + b.W); x++)
+                    for (int y = b.Lift == 0 ? t.Height[t.Index(x, z)] : bottom; y < top; y++)
+                        w.Set(x, y, z, windows && y > ground && (y - ground) % 4 == 2 ? band : solid);
+        }
+        int c = t.Size / 2;
+        Mural.Stamp(w, prepared, c - BiomeGenerator.MuralWidth / 2, c - BiomeGenerator.MuralDistance,
+            BiomeGenerator.MuralWidth, BiomeGenerator.MuralHeight);
+        return w;
+    }
+
     static uint Mix(uint rgb, double k, double add)
     {
         uint Ch(int s) => (uint)Math.Clamp((int)Math.Round(((rgb >> s) & 0xFF) * k + add), 0, 255);

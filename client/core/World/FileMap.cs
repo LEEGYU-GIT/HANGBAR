@@ -39,6 +39,32 @@ public sealed class FileMap
     }
 }
 
+/// <summary>Round props drawn by the game, not as blocks (design §4-2: only terrain and buildings are blocks).</summary>
+public enum PropKind { Tree, Bush, Rock, Cup, Plant, Lamp, Bench }
+
+/// <summary>
+/// A prop standing on column (X, Z); the game puts it on the highest block there. Scale multiplies the prop's
+/// normal size (indoor cups and plants are giants, ×4 and more). Color is 0xRRGGBB.
+/// </summary>
+public sealed record Prop(PropKind Kind, int X, int Z, float Scale, uint Color);
+
+/// <summary>
+/// A box of blocks over columns X..X+W-1, Z..Z+D-1 (city building, indoor furniture or step, platform, rail).
+/// It stands on the highest ground under it and is Height blocks tall; with Lift it floats that many blocks above
+/// the ground instead (the top of a tunnel arch).
+/// </summary>
+public sealed record Building(int X, int Z, int W, int D, int Height, uint Color, int Lift = 0);
+
+/// <summary>A generated biome: terrain columns plus the buildings and props on them (design §6-3).</summary>
+public sealed class BiomeMap(FileMap terrain, IReadOnlyList<Building> buildings, IReadOnlyList<Prop> props, Biome biome, Mood mood)
+{
+    public FileMap Terrain { get; } = terrain;
+    public IReadOnlyList<Building> Buildings { get; } = buildings;
+    public IReadOnlyList<Prop> Props { get; } = props;
+    public Biome Biome { get; } = biome;
+    public Mood Mood { get; } = mood;
+}
+
 /// <summary>World identity from photo content, never from file names or paths.</summary>
 public static class WorldSeed
 {
