@@ -40,13 +40,14 @@ public sealed class FileMap
 }
 
 /// <summary>Round props drawn by the game, not as blocks (design §4-2: only terrain and buildings are blocks).</summary>
-public enum PropKind { Tree, Bush, Rock, Cup, Plant, Lamp, Bench }
+public enum PropKind { Tree, Bush, Rock, Cup, Plant, Lamp, Bench, Parasol, Float }
 
 /// <summary>
 /// A prop standing on column (X, Z); the game puts it on the highest block there. Scale multiplies the prop's
-/// normal size (indoor cups and plants are giants, ×4 and more). Color is 0xRRGGBB.
+/// normal size (indoor cups and plants are giants, ×4 and more). Color is 0xRRGGBB. Y ≥ 0 puts it on that block
+/// height instead (a cup on a table, a float on the water surface).
 /// </summary>
-public sealed record Prop(PropKind Kind, int X, int Z, float Scale, uint Color);
+public sealed record Prop(PropKind Kind, int X, int Z, float Scale, uint Color, int Y = -1);
 
 /// <summary>
 /// A box of blocks over columns X..X+W-1, Z..Z+D-1 (city building, indoor furniture or step, platform, rail).
