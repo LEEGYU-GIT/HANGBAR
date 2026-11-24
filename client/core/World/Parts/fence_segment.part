@@ -1,0 +1,15 @@
+part: fence_segment
+size: 4 5 1                  # posts at both ends, two rails; stretch the middle
+legend:
+  M = Metal dark
+stretch: x 1 2
+layer 0:
+M..M
+layer 1:
+M..M
+layer 2:
+MMMM
+layer 3:
+M..M
+layer 4:
+MMMM

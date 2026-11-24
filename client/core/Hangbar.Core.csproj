@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="World/biome-labels.csv" LogicalName="biome-labels.csv" />
+    <EmbeddedResource Include="World/Parts/*.part" LogicalName="parts/%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

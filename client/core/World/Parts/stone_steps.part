@@ -1,0 +1,28 @@
+part: stone_steps
+size: 4 6 3                  # 4 wide, three steps 2 blocks high each
+legend:
+  S = Stone secondary
+layer 0:
+SSSS
+SSSS
+SSSS
+layer 1:
+SSSS
+SSSS
+SSSS
+layer 2:
+....
+SSSS
+SSSS
+layer 3:
+....
+SSSS
+SSSS
+layer 4:
+....
+....
+SSSS
+layer 5:
+....
+....
+SSSS
