@@ -5,7 +5,7 @@ namespace Hangbar.Core.Tests.World.Gen;
 
 /// <summary>
 /// A small scene for pipeline tests: gentle hills between y 56 and 70, a pond in the north-west corner, one old
-/// stone_steps part, spawn in the middle facing north, one mural candidate (a cliff face cut into a hill).
+/// stone_steps part with a glass block, a trail, spawn in the middle facing north, one mural candidate.
 /// </summary>
 public sealed class TestScene(bool withMuralCandidate = true) : IScene
 {
@@ -25,6 +25,8 @@ public sealed class TestScene(bool withMuralCandidate = true) : IScene
                     ctx.WaterTop[i] = 56;
                 }
             }
+        // a trail across the map south of the spawn
+        for (int x = 40; x < 150; x++) ctx.Path[ctx.Index(x, C + 10)] = true;
         // flat spawn yard
         for (int z = C - 4; z <= C + 4; z++)
             for (int x = C - 4; x <= C + 4; x++)
@@ -50,6 +52,7 @@ public sealed class TestScene(bool withMuralCandidate = true) : IScene
             ctx.Colors, new PlaceOptions(), ctx.Rng);
         ctx.Structures.Add(steps);
         ctx.MarkOld(steps);
+        ctx.World.Set(x0, ground + 5, z0, Block.Solid(0xC8E6F0, Material.Glass)); // glass inside the old part: must never weather
         ctx.Landmark = new Landmark("test", new BlockPos(x0, ground, z0));
     }
 

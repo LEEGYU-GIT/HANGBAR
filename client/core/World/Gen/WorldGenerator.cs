@@ -17,9 +17,10 @@ public static class WorldGenerator
         Strata.Fill(ctx);
         Underground.Carve(ctx);
         scene.Build(ctx);
-        var view = scene.View(ctx);
         var landmark = ctx.Landmark ?? throw new InvalidOperationException($"scene {scene.Kind} placed no landmark");
-        var mural = view.MuralCandidates.Count > 0 ? view.MuralCandidates[0] : new MuralSpot(view.Spawn, Facing.North, 0, 0, false);
+        Weathering.Apply(ctx);
+        var view = scene.View(ctx);
+        var mural = HiddenMural.Place(ctx, view);
 
         double dx = view.Target.X - view.Spawn.X, dz = view.Target.Z - view.Spawn.Z;
         float facing = (float)(Math.Atan2(-dx, -dz) * 180 / Math.PI);

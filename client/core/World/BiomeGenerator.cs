@@ -563,6 +563,30 @@ public static class Mural
         }
     }
 
+    /// <summary>
+    /// v2: the photo on a mural spot. Read left to right by someone standing in front of it (the spot's facing side);
+    /// row 0 of the photo is the top. Blocks are Material.Pixel. A framed spot gets a 1-block wooden border around it.
+    /// </summary>
+    public static void Stamp(VoxelWorld w, PixelImage prepared, MuralSpot spot, uint frameColor = 0x3A2A1A)
+    {
+        if (spot.Width <= 0 || spot.Height <= 0) return;
+        var art = Fit(prepared, spot.Width, spot.Height);
+        var (rx, rz) = HiddenMural.RightOf(spot.Facing);
+        var o = spot.Origin;
+        for (int c = 0; c < spot.Width; c++)
+            for (int r = 0; r < spot.Height; r++)
+            {
+                var (red, green, blue, _) = PixelImage.Unpack(art[c, spot.Height - 1 - r]);
+                w.Set(o.X + rx * c, o.Y + r, o.Z + rz * c, Block.Solid((uint)(red << 16 | green << 8 | blue), Material.Pixel));
+            }
+        if (!spot.Framed) return;
+        uint wood = Block.Solid(frameColor, Material.Wood);
+        for (int c = -1; c <= spot.Width; c++)
+            for (int r = -1; r <= spot.Height; r++)
+                if (c < 0 || r < 0 || c == spot.Width || r == spot.Height)
+                    w.Set(o.X + rx * c, o.Y + r, o.Z + rz * c, wood);
+    }
+
     /// <summary>Centre crop to the target aspect, then area average (or nearest, when growing) to width×height.</summary>
     static PixelImage Fit(PixelImage src, int width, int height)
     {

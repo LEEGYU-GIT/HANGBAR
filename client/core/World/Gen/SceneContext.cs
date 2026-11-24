@@ -75,6 +75,8 @@ public sealed class SceneContext
     /// <summary>Marks a structure as old: weathering cracks a share of its blocks.</summary>
     public void MarkOld(PlacedPart p) => _old.Add(p);
 
+    public IReadOnlyList<PlacedPart> OldParts => _old;
+
     public bool IsOld(int x, int y, int z) =>
         _old.Any(p => x >= p.Min.X && x <= p.Max.X && y >= p.Min.Y && y <= p.Max.Y && z >= p.Min.Z && z <= p.Max.Z);
 }
