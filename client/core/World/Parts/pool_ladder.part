@@ -1,0 +1,28 @@
+part: pool_ladder
+size: 3 8 2                  # z=0 hangs in the water against the wall, z=1 is the deck edge; two handrails arch over the edge
+legend:
+  M = Metal light
+layer 0:
+M_M
+___
+layer 1:
+MMM
+___
+layer 2:
+M_M
+___
+layer 3:
+MMM
+___
+layer 4:
+M_M
+___
+layer 5:
+M_M
+M_M
+layer 6:
+M_M
+M_M
+layer 7:
+M_M
+M_M

@@ -1,0 +1,35 @@
+part: diving_board
+size: 3 3 9                  # front (z=0) is the tip over the water; the stand sits on the deck at z 6-8
+legend:
+  S = Metal dark
+  B = Wood light
+layer 0:
+___
+___
+___
+___
+___
+___
+SSS
+SSS
+SSS
+layer 1:
+___
+___
+___
+___
+___
+___
+SSS
+SSS
+SSS
+layer 2:
+BBB
+BBB
+BBB
+BBB
+BBB
+BBB
+BBB
+BBB
+BBB

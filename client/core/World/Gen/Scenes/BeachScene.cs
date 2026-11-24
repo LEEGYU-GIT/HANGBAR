@@ -9,7 +9,7 @@ namespace Hangbar.Core.World.Gen;
 /// </summary>
 /// <remarks>
 /// Everything is laid out in local coordinates — a runs along the shore, b runs from the sea (small b) inland — and
-/// turned into world columns by <see cref="W"/> for the side the seed picked.
+/// turned into world columns by a <see cref="LocalFrame"/> for the side the seed picked.
 /// </remarks>
 public sealed class BeachScene : IScene
 {
@@ -22,64 +22,20 @@ public sealed class BeachScene : IScene
 
     public Scene Kind => Scene.Beach;
 
-    int _side, _e, _beachW, _sA, _pierA, _towerA, _bluffA0, _bluffFront, _outcropA0, _outcropB0, _outcropY, _landmark;
+    LocalFrame _f;
+    int _e, _beachW, _sA, _pierA, _towerA, _bluffA0, _bluffFront, _outcropA0, _outcropB0, _outcropY, _landmark;
     readonly int[] _shore = new int[N]; // per a: the first land b (b < shore is sea)
     readonly List<(int A, int B, int Y)> _huts = new();
 
     // ---- the local frame -------------------------------------------------------------------------------------
 
-    (int X, int Z) W(int a, int b) => _side switch
-    {
-        0 => (a, b),                   // sea in the north
-        1 => (N - 1 - b, a),           // sea in the east
-        2 => (N - 1 - a, N - 1 - b),   // sea in the south
-        _ => (b, N - 1 - a),           // sea in the west
-    };
-
-    int I(int a, int b)
-    {
-        var (x, z) = W(a, b);
-        return z * N + x;
-    }
-
-    (int X, int Z) Dir(int da, int db) => _side switch
-    {
-        0 => (da, db),
-        1 => (-db, da),
-        2 => (-da, -db),
-        _ => (db, -da),
-    };
-
-    static Facing FacingOf((int X, int Z) d) => d switch
-    {
-        (0, -1) => Facing.North,
-        (0, 1) => Facing.South,
-        (1, 0) => Facing.East,
-        _ => Facing.West,
-    };
-
-    Facing Seaward => FacingOf(Dir(0, -1));
-    Facing Landward => FacingOf(Dir(0, 1));
-
-    /// <summary>Turn that points a part's +x along <paramref name="f"/>.</summary>
-    static Rotation Along(Facing f) => f switch
-    {
-        Facing.East => Rotation.R0, Facing.South => Rotation.R90, Facing.West => Rotation.R180, _ => Rotation.R270,
-    };
-
-    /// <summary>Turn that makes a part's front (z = 0) face <paramref name="f"/>.</summary>
-    static Rotation FrontTo(Facing f) => f switch
-    {
-        Facing.North => Rotation.R0, Facing.East => Rotation.R90, Facing.South => Rotation.R180, _ => Rotation.R270,
-    };
-
-    /// <summary>World min corner of the local box a0..a0+wa−1 × b0..b0+wb−1.</summary>
-    BlockPos Origin(int a0, int b0, int wa, int wb, int y)
-    {
-        var (x1, z1) = W(a0, b0);
-        var (x2, z2) = W(a0 + wa - 1, b0 + wb - 1);
-        return new BlockPos(Math.Min(x1, x2), y, Math.Min(z1, z2));
-    }
+    (int X, int Z) W(int a, int b) => _f.W(a, b);
+    int I(int a, int b) => _f.I(a, b);
+    BlockPos Origin(int a0, int b0, int wa, int wb, int y) => _f.Origin(a0, b0, wa, wb, y);
+    static Rotation Along(Facing f) => LocalFrame.Along(f);
+    static Rotation FrontTo(Facing f) => LocalFrame.FrontTo(f);
+    Facing Seaward => _f.FacingOf(0, -1);
+    Facing Landward => _f.FacingOf(0, 1);
 
     bool InBluff(int a, int b) => a >= _bluffA0 && a < _bluffA0 + BluffW && b >= _bluffFront && b < _bluffFront + BluffDeep;
     bool InOutcrop(int a, int b) => a >= _outcropA0 && a < _outcropA0 + OutcropW && b >= _outcropB0 && b < _outcropB0 + OutcropD;
@@ -90,7 +46,7 @@ public sealed class BeachScene : IScene
     {
         var rng = ctx.Rng;
         var noise = ctx.Noise;
-        _side = rng.NextInt(0, 4);
+        _f = new LocalFrame(rng.NextInt(0, 4));
         _e = rng.Next() < 0.5 ? -1 : 1; // the end of the beach the bluff closes
         _beachW = rng.NextInt(26, 33);
         double amp = 4 + 6 * rng.Next(), waves = 1 + rng.Next(), phase = rng.Next() * 2 * Math.PI;
@@ -281,10 +237,7 @@ public sealed class BeachScene : IScene
                         for (int y = floor - 2; y <= 70; y++)
                             if (pillar || y >= 65) w.Set(x, y, z, stone);
                     }
-                var min = Origin(a0, b0, 13, 3, floor - 2);
-                var (sx, sz) = (Math.Abs(Dir(1, 0).X) == 1 ? 13 : 3, Math.Abs(Dir(1, 0).X) == 1 ? 3 : 13);
-                ctx.Structures.Add(new PlacedPart("sea_arch", min, new BlockPos(min.X + sx - 1, 70, min.Z + sz - 1),
-                    new Dictionary<string, BlockPos>()));
+                ctx.Structures.Add(_f.Box("sea_arch", a0, b0, 13, 3, floor - 2, 70));
                 var (cx, cz) = W(ca, cb);
                 ctx.Landmark = new Landmark("sea_arch", new BlockPos(cx, 66, cz));
                 break;
@@ -376,14 +329,6 @@ public sealed class BeachScene : IScene
         return new SceneView(spawn, target, candidates);
     }
 
-    /// <summary>A mural on the wall row b from column a1 to a2, its origin at the viewer's left end.</summary>
-    MuralSpot Spot(int a1, int a2, int b, int y, Facing f, int height)
-    {
-        var p = W(a1, b);
-        var q = W(a2, b);
-        int width = a2 - a1 + 1;
-        var (rx, rz) = HiddenMural.RightOf(f);
-        var origin = p.X + rx * (width - 1) == q.X && p.Z + rz * (width - 1) == q.Z ? p : q;
-        return new MuralSpot(new BlockPos(origin.X, y, origin.Z), f, width, height, false);
-    }
+    /// <summary>A mural on the wall row b from column a1 to a2.</summary>
+    MuralSpot Spot(int a1, int a2, int b, int y, Facing f, int height) => LocalFrame.Spot(W(a1, b), W(a2, b), y, f, height);
 }

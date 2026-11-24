@@ -1,0 +1,153 @@
+part: changing_room
+size: 18 13 10               # changing side (x 1-7, closed glass doors) and a walk-in plant room (x 9-16, 8x11x8) with a 4x9 back door
+legend:
+  W = Concrete light
+  F = Tile secondary
+  R = Concrete dark
+  D = DarkGlass #2E3A44
+anchor: door 12 1 9
+anchor: mural_a 10 2 0
+anchor: mural_b 15 2 0
+layer 0:
+FFFFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFFFF
+FFFFFFFFFFFFFFFFFF
+layer 1:
+WWDDDDWWWWWWWWWWWW
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+WWWWWWWWWWW....WWW
+layer 2:
+WWDDDDWWWWWWWWWWWW
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+WWWWWWWWWWW....WWW
+layer 3:
+WWDDDDWWWWWWWWWWWW
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+WWWWWWWWWWW....WWW
+layer 4:
+WWDDDDWWWWWWWWWWWW
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+WWWWWWWWWWW....WWW
+layer 5:
+WWDDDDWWWWWWWWWWWW
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+WWWWWWWWWWW....WWW
+layer 6:
+WWDDDDWWWWWWWWWWWW
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+WWWWWWWWWWW....WWW
+layer 7:
+WWDDDDWWWWWWWWWWWW
+W.......W........W
+W.......W........W
+D.......W........W
+D.......W........W
+D.......W........W
+D.......W........W
+W.......W........W
+W.......W........W
+WWWWWWWWWWW....WWW
+layer 8:
+WWDDDDWWWWWWWWWWWW
+W.......W........W
+W.......W........W
+D.......W........W
+D.......W........W
+D.......W........W
+D.......W........W
+W.......W........W
+W.......W........W
+WWWWWWWWWWW....WWW
+layer 9:
+WWWWWWWWWWWWWWWWWW
+W.......W........W
+W.......W........W
+D.......W........W
+D.......W........W
+D.......W........W
+D.......W........W
+W.......W........W
+W.......W........W
+WWWWWWWWWWW....WWW
+layer 10:
+WWWWWWWWWWWWWWWWWW
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+WWWWWWWWWWWWWWWWWW
+layer 11:
+WWWWWWWWWWWWWWWWWW
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+W.......W........W
+WWWWWWWWWWWWWWWWWW
+layer 12:
+RRRRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRRRR

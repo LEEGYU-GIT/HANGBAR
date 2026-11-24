@@ -20,6 +20,7 @@ public static class Scenes
     public static IScene Create(Scene s) => s switch
     {
         Scene.Beach => new BeachScene(),
+        Scene.Pool => new PoolScene(),
         Scene.Mountain => new MountainScene(),
         _ => throw new NotSupportedException($"scene {s} is not built yet"),
     };

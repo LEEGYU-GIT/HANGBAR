@@ -1,0 +1,41 @@
+part: lifeguard_chair
+size: 3 9 3                  # tall legs, a seat 6 up, a back on the far side
+legend:
+  L = Metal light
+  S = Wood secondary
+layer 0:
+L_L
+___
+L_L
+layer 1:
+L_L
+___
+L_L
+layer 2:
+L_L
+___
+L_L
+layer 3:
+L_L
+___
+L_L
+layer 4:
+L_L
+___
+L_L
+layer 5:
+L_L
+___
+L_L
+layer 6:
+SSS
+SSS
+SSS
+layer 7:
+L_L
+___
+SSS
+layer 8:
+L_L
+___
+SSS
