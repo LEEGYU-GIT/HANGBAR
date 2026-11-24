@@ -1,0 +1,6 @@
+# Python packages for the theme-model scripts in this folder (see models/README.md). CPU only.
+onnx==1.23.2
+onnxruntime==1.23.2
+tokenizers==0.23.3
+numpy==2.2.6
+pillow==12.3.0
