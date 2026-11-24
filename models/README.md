@@ -7,21 +7,33 @@
 
 ## 준비 순서
 
-저장소 폴더(HANGBAR)에서 실행한다. Python 3.10 이상이 필요하다.
+저장소 폴더(HANGBAR)에서 실행한다. Python 3.10 이상이 필요하다. 스크립트는 반드시 가상환경(`.venv`)의 Python으로 실행한다.
+
+Windows(PowerShell):
 
 ```
 python -m venv .venv
-.venv\Scripts\python -m pip install -r tools/theme-probe/requirements.txt    # Windows
-.venv/bin/python -m pip install -r tools/theme-probe/requirements.txt        # Linux
+.venv\Scripts\python -m pip install -r tools/theme-probe/requirements.txt
+.venv\Scripts\python tools/theme-probe/fetch_models.py          # 내려받기와 SHA-256 확인
+.venv\Scripts\python tools/theme-probe/convert_places365.py     # Places365 체크포인트 → ONNX, 라벨 파일
+.venv\Scripts\python tools/theme-probe/make_text_embeddings.py  # CLIP 바이옴 문장 임베딩
+```
 
-python tools/theme-probe/fetch_models.py          # 내려받기와 SHA-256 확인
-python tools/theme-probe/convert_places365.py     # Places365 체크포인트 → ONNX, 라벨 파일
-python tools/theme-probe/make_text_embeddings.py  # CLIP 바이옴 문장 임베딩
+Linux:
+
+```
+python3 -m venv .venv
+.venv/bin/python -m pip install -r tools/theme-probe/requirements.txt
+.venv/bin/python tools/theme-probe/fetch_models.py
+.venv/bin/python tools/theme-probe/convert_places365.py
+.venv/bin/python tools/theme-probe/make_text_embeddings.py
 ```
 
 - `fetch_models.py`는 해시가 다른 파일을 삭제하고 실패로 종료한다. 이미 받은 파일은 해시만 확인한다.
 - 세 스크립트 모두 `--models 폴더`로 다른 폴더를 지정할 수 있다.
-- 같은 입력이면 같은 결과가 나온다. 새 폴더에서 다시 생성해도 아래 해시와 같았다(2026-11-24).
+- 아래 해시는 2026-11-24 이 저장소를 처음 준비한 PC에서 생성한 값이다. 같은 PC의 새 폴더에서 다시 생성해도 같았다.
+  - `places365.onnx`와 `places365-labels.txt`는 계산 없이 값만 옮겨 만들므로, `requirements.txt`의 패키지 판이 같으면 어느 PC에서나 같아야 한다.
+  - `clip-text-biomes.json`은 ONNX Runtime 계산 결과라 CPU에 따라 마지막 자리가 달라져 해시가 다를 수 있다.
 
 ## 게임이 사용하는 파일
 
@@ -47,12 +59,12 @@ SHA-256:
 
 ## 생성에만 사용하는 파일 (`download/`)
 
-| 파일 | 출처 | SHA-256 |
-|---|---|---|
-| `resnet18_places365.pth.tar` | MIT CSAIL 서버(http만 제공) | `2f4759217d470da2b803f8f66cd4488a066406b555a5fb95ee9a4663f9f05588` |
-| `categories_places365.txt` | `CSAILVision/places365` 커밋 `8a953ed` | `2affba635eb657e7ca95f4e6cc69bd9fac29ef4c32aeb83cafdfcd06ec6a1ea6` |
-| `clip-text-model.onnx` | `Xenova/clip-vit-base-patch32` 커밋 `6b7c523`, `onnx/text_model.onnx` | `3f6571f5bad13a97c469c1622e1cfc4d9aef78b79fdbfcff804ca357bfada8cc` |
-| `clip-tokenizer.json` | 같은 커밋, `tokenizer.json` | `f7f3b7af117d467b58374797691a6438d3e6b9e9cef800dfd5dced7f697a90cd` |
+| 파일 | 크기(바이트) | 출처 | SHA-256 |
+|---|---|---|---|
+| `resnet18_places365.pth.tar` | 45,506,139 | MIT CSAIL 서버(http만 제공) | `2f4759217d470da2b803f8f66cd4488a066406b555a5fb95ee9a4663f9f05588` |
+| `categories_places365.txt` | 6,833 | `CSAILVision/places365` 커밋 `8a953ed` | `2affba635eb657e7ca95f4e6cc69bd9fac29ef4c32aeb83cafdfcd06ec6a1ea6` |
+| `clip-text-model.onnx` | 254,058,553 | `Xenova/clip-vit-base-patch32` 커밋 `6b7c523`, `onnx/text_model.onnx` | `3f6571f5bad13a97c469c1622e1cfc4d9aef78b79fdbfcff804ca357bfada8cc` |
+| `clip-tokenizer.json` | 2,224,119 | 같은 커밋, `tokenizer.json` | `f7f3b7af117d467b58374797691a6438d3e6b9e9cef800dfd5dced7f697a90cd` |
 
 - Places365 가중치는 http로만 내려받을 수 있다. 그래서 2026-11-24 첫 내려받기의 해시를 기록하고 이후에는 그 해시로 확인한다.
 - Hugging Face 파일의 해시는 저장소가 공개한 값(LFS)과 같다.

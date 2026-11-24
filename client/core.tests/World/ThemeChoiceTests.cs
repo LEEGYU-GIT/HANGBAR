@@ -67,6 +67,50 @@ public class ThemeChoiceTests
     }
 
     [Fact]
+    public void Undefined_model_biome_falls_back_to_colors() =>
+        Assert.Equal(new ThemeResult(Biome.Water, 0f, "color"), ThemeChoice.Choose(new ThemeResult((Biome)9, 0.9f, "clip"), Blue));
+
+    [Fact]
+    public void ThemeCache_ignores_entries_it_cannot_use()
+    {
+        string path = Path.Combine(Path.GetTempPath(), "inpc-test-" + Guid.NewGuid().ToString("N") + ".json");
+        try
+        {
+            File.WriteAllText(path, """
+                {"0000000000000001": null,
+                 "0000000000000002": {"biome": "9", "confidence": 0.5, "source": "clip"},
+                 "0000000000000003": {"biome": "Water", "confidence": 0.5, "source": null},
+                 "0000000000000004": {"biome": "Road", "confidence": 0.7, "source": "places"}}
+                """);
+            var c = new ThemeCache(path);
+            Assert.Null(c.Get(1));
+            Assert.Null(c.Get(2));
+            Assert.Null(c.Get(3));
+            Assert.Equal(new ThemeResult(Biome.Road, 0.7f, "places"), c.Get(4));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public void ThemeCache_keeps_working_when_it_cannot_write()
+    {
+        string blocker = Path.GetTempFileName(); // a file where the cache's folder would have to be
+        try
+        {
+            var c = new ThemeCache(Path.Combine(blocker, "theme-cache.json"));
+            c.Put(5, new ThemeResult(Biome.Forest, 0.6f, "clip"));
+            Assert.Equal(Biome.Forest, c.Get(5)?.Biome);
+        }
+        finally
+        {
+            File.Delete(blocker);
+        }
+    }
+
+    [Fact]
     public void ThemeCache_treats_a_corrupt_file_as_empty()
     {
         string path = Path.Combine(Path.GetTempPath(), "inpc-test-" + Guid.NewGuid().ToString("N") + ".json");

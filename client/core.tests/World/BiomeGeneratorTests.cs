@@ -120,6 +120,62 @@ public class BiomeGeneratorTests
         Assert.DoesNotContain(m.Props, p => p.X >= x0 && p.X <= x1 && p.Z >= z0 && p.Z <= z1);
     }
 
+    // ---- dark and gray photos (plan Review Focus 5): the world, not only the palette, must stay readable
+
+    static double Luma(uint rgb) => (0.299 * (rgb >> 16 & 0xFF) + 0.587 * (rgb >> 8 & 0xFF) + 0.114 * (rgb & 0xFF)) / 255.0;
+
+    static PixelImage DarkPhoto(string kind)
+    {
+        if (kind == "gray") return BiomeTests.Solid(N, 120, 120, 125);
+        if (kind == "night") return BiomeTests.Solid(N, 20, 20, 30);
+        var px = new uint[N * N]; // night street: dark, with about one seventh lamp-lit
+        for (int y = 0; y < N; y++)
+            for (int x = 0; x < N; x++)
+                px[y * N + x] = (x / 12 + y / 16) % 7 == 0 ? PixelImage.Pack(250, 215, 140) : PixelImage.Pack(18 + (x * 7 + y * 3) % 9, 20, 28);
+        return new PixelImage(N, N, px);
+    }
+
+    /// <summary>Raw palette on purpose: the generator must apply the contrast guard itself.</summary>
+    static BiomeMap FromDarkPhoto(string kind, Biome b, out PixelImage prepared)
+    {
+        prepared = ImageFit.Prepare(DarkPhoto(kind), N);
+        return BiomeGenerator.Generate(b, Palette.Extract(prepared), MoodReader.Read(prepared), 7);
+    }
+
+    [Theory]
+    [InlineData("gray", Biome.Field)] [InlineData("gray", Biome.Forest)] [InlineData("gray", Biome.City)]
+    [InlineData("night", Biome.Field)] [InlineData("night", Biome.Forest)] [InlineData("night", Biome.City)]
+    [InlineData("street", Biome.Field)] [InlineData("street", Biome.Forest)] [InlineData("street", Biome.City)]
+    public void Dark_or_gray_photos_still_give_a_readable_world(string kind, Biome b)
+    {
+        var m = FromDarkPhoto(kind, b, out var prepared);
+        var w = VoxelWorld.FromBiomeMap(m, prepared);
+        var tops = new List<double>();
+        for (int z = 0; z < N; z++)
+            for (int x = 0; x < N; x++)
+            {
+                int y = w.SizeY - 1;
+                while (y > 0 && !Block.IsSolid(w.Get(x, y, z))) y--;
+                tops.Add(Luma(Block.ColorOf(w.Get(x, y, z))));
+            }
+        tops.Sort();
+        double p10 = tops[tops.Count / 10], p90 = tops[tops.Count * 9 / 10];
+        Assert.True(p90 - p10 >= 0.15, $"{kind} {b}: top faces only span {p10:0.00}..{p90:0.00}");
+    }
+
+    [Theory]
+    [InlineData("gray", Biome.Field)] [InlineData("gray", Biome.Forest)]
+    [InlineData("night", Biome.Field)] [InlineData("night", Biome.Forest)]
+    [InlineData("street", Biome.Field)] [InlineData("street", Biome.Forest)]
+    public void Trees_stand_out_from_the_ground(string kind, Biome b)
+    {
+        var m = FromDarkPhoto(kind, b, out _);
+        double Median(IEnumerable<double> v) { var s = v.OrderBy(x => x).ToList(); return s[s.Count / 2]; }
+        double ground = Median(m.Terrain.Color.Where((_, i) => !m.Terrain.Water[i]).Select(Luma));
+        double trees = Median(m.Props.Where(p => p.Kind == PropKind.Tree).Select(p => Luma(p.Color)));
+        Assert.True(Math.Abs(trees - ground) >= 0.1, $"{kind} {b}: trees {trees:0.00} on ground {ground:0.00}");
+    }
+
     [Fact]
     public void Different_seeds_give_different_worlds() =>
         Assert.NotEqual(Make(Biome.Field, 1).Terrain.Height, Make(Biome.Field, 2).Terrain.Height);

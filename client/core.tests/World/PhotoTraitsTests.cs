@@ -57,6 +57,39 @@ public class PhotoTraitsTests
         Assert.True(p.Max(Luma) - p.Min(Luma) >= 0.35);
     }
 
+    [Theory]
+    [InlineData(128, 128, 128)]
+    [InlineData(20, 20, 30)]
+    public void Flat_middle_colors_are_spread_and_lifted(int r, int g, int b)
+    {
+        // the generator paints ground, leaves and walls mostly from the middle entries, not the two ends
+        var p = Palette.EnsureContrast(Palette.Extract(BiomeTests.Solid(64, r, g, b)));
+        var middle = p[1..^1].Select(Luma).ToArray();
+        Assert.True(middle.Max() - middle.Min() >= 0.28, $"middle spread {middle.Max() - middle.Min():0.000}");
+        Assert.True(middle.Max() >= 0.33, $"lightest middle color {middle.Max():0.000}");
+        Assert.Equal(p.Select(Luma).OrderBy(l => l), p.Select(Luma)); // still dark to light
+    }
+
+    [Fact]
+    public void One_light_middle_color_does_not_hide_a_flat_rest()
+    {
+        // a night street: three nearly equal darks and one lamp color in the middle
+        uint[] p = { 0x141414, 0x171717, 0x181818, 0x191919, 0x787878, 0xDADADA };
+        var middle = Palette.EnsureContrast(p)[1..^1].Select(Luma).ToArray();
+        for (int k = 1; k < middle.Length; k++)
+            Assert.True(middle[k] - middle[k - 1] >= 0.05, $"middle colors {string.Join(" ", middle.Select(l => l.ToString("0.00")))}");
+    }
+
+    [Fact]
+    public void EnsureContrast_is_stable()
+    {
+        foreach (var photo in new[] { BiomeTests.Solid(64, 128, 128, 128), BiomeTests.Solid(64, 20, 20, 30), Meadow })
+        {
+            var once = Palette.EnsureContrast(Palette.Extract(photo));
+            Assert.Equal(once, Palette.EnsureContrast(once));
+        }
+    }
+
     [Fact]
     public void Palette_with_contrast_is_left_alone()
     {

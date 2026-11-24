@@ -15,6 +15,7 @@ public static class BiomeGenerator
     {
         if (palette.Length == 0) throw new ArgumentException("the palette is empty", nameof(palette));
         if (size < 128) throw new ArgumentOutOfRangeException(nameof(size), "a file map is at least 128 columns");
+        palette = Palette.EnsureContrast(palette); // a gray or night photo still gives a readable world (Review Focus 5)
         var g = new Gen(palette, seed, seed ^ (ulong)(biome + 1) * 0x9E3779B97F4A7C15UL, size);
         switch (biome)
         {
@@ -111,9 +112,10 @@ public static class BiomeGenerator
             PinFlat();
             Shape();
             PaintGround(0.25, 0.85, 2);
-            Scatter(PropKind.Tree, _n * _n / 600, 4, 0.8, 1.4, LeafColor());
-            Scatter(PropKind.Bush, _n * _n / 350, 3, 0.6, 1.1, Shade(LeafColor(), 0.85));
-            Scatter(PropKind.Rock, _n * _n / 2500, 3, 0.5, 1.2, Gray(P(0.45), 0.7));
+            var (leaf, bush, rock) = Greenery(0.45);
+            Scatter(PropKind.Tree, _n * _n / 600, 4, 0.8, 1.4, leaf);
+            Scatter(PropKind.Bush, _n * _n / 350, 3, 0.6, 1.1, bush);
+            Scatter(PropKind.Rock, _n * _n / 2500, 3, 0.5, 1.2, rock);
         }
 
         public void Road()
@@ -151,8 +153,9 @@ public static class BiomeGenerator
                 int z = k % 2 == 0 ? centre[x] - 8 : centre[x] + 7;
                 if (In(x, z) && !OnReserved(x, z)) Props.Add(new Prop(PropKind.Lamp, x, z, 1f, P(1)));
             }
-            Scatter(PropKind.Tree, _n * _n / 700, 4, 0.8, 1.3, LeafColor());
-            Scatter(PropKind.Bush, _n * _n / 450, 3, 0.6, 1.0, Shade(LeafColor(), 0.85));
+            var (leaf, bush, _) = Greenery(0.45);
+            Scatter(PropKind.Tree, _n * _n / 700, 4, 0.8, 1.3, leaf);
+            Scatter(PropKind.Bush, _n * _n / 450, 3, 0.6, 1.0, bush);
         }
 
         public void Water()
@@ -197,9 +200,10 @@ public static class BiomeGenerator
                     double t = (_height[i] - minLand) / (double)Math.Max(1, maxLand - minLand);
                     _color[i] = Jitter(shore ? sand : Lerp(grassLow, grassHigh, t), x, z);
                 }
-            Scatter(PropKind.Rock, _n * _n / 900, 3, 0.5, 1.3, Gray(P(0.5), 0.6));
-            Scatter(PropKind.Tree, _n * _n / 900, 4, 0.8, 1.3, LeafColor());
-            Scatter(PropKind.Bush, _n * _n / 600, 3, 0.6, 1.0, Shade(LeafColor(), 0.85));
+            var (leaf, bush, rock) = Greenery(0.5);
+            Scatter(PropKind.Rock, _n * _n / 900, 3, 0.5, 1.3, rock);
+            Scatter(PropKind.Tree, _n * _n / 900, 4, 0.8, 1.3, leaf);
+            Scatter(PropKind.Bush, _n * _n / 600, 3, 0.6, 1.0, bush);
         }
 
         public void Forest()
@@ -208,15 +212,17 @@ public static class BiomeGenerator
             PinFlat();
             Shape();
             PaintGround(0.1, 0.65, 9);
-            uint leaf = LeafColor();
+            var (leaf, bush, rock) = Greenery(0.4);
             Scatter(PropKind.Tree, _n * _n / 60, 3, 0.8, 1.7, leaf);
-            Scatter(PropKind.Bush, _n * _n / 300, 2, 0.6, 1.1, Shade(leaf, 0.8));
-            Scatter(PropKind.Rock, _n * _n / 1500, 3, 0.6, 1.4, Gray(P(0.4), 0.6));
+            Scatter(PropKind.Bush, _n * _n / 300, 2, 0.6, 1.1, bush);
+            Scatter(PropKind.Rock, _n * _n / 1500, 3, 0.6, 1.4, rock);
         }
 
         public void City()
         {
-            uint asphalt = Asphalt(), pavement = Gray(P(0.65), 0.5);
+            uint pavement = Gray(P(0.65), 0.5);
+            double walk = Palette.Luma(pavement);
+            uint asphalt = Apart(Asphalt(), walk, 0.1);
             var street = new bool[_n * _n];
             var lines = Enumerable.Range(-_c / 40, _n / 40 + 1).Select(k => _c + 40 * k).Where(s => s - 4 >= 0 && s + 4 <= _n).ToList();
             for (int z = 0; z < _n; z++)
@@ -239,7 +245,7 @@ public static class BiomeGenerator
                         int w = _rng.NextInt(8, half - 3), d = _rng.NextInt(8, half - 3);
                         int x0 = sx + 2 + _rng.NextInt(0, half - 3 - w), z0 = sz + 2 + _rng.NextInt(0, half - 3 - d);
                         if (Overlaps(x0, z0, w, d, 1)) continue;
-                        uint color = Jitter(P(0.15 + 0.6 * _rng.Next()), x0, z0);
+                        uint color = Apart(Jitter(P(0.15 + 0.6 * _rng.Next()), x0, z0), walk, 0.1);
                         AddBox(x0, z0, w, d, 12 + _rng.NextInt(0, 25), color);
                     }
                 }
@@ -250,13 +256,15 @@ public static class BiomeGenerator
                     int x = lines[s] + 5, z = t;
                     if (In(x, z) && !_blocked[I(x, z)]) Props.Add(new Prop(PropKind.Lamp, x, z, 1f, P(1)));
                 }
-            Scatter(PropKind.Tree, _n * _n / 1200, 4, 0.7, 1.1, LeafColor());
-            Scatter(PropKind.Bench, _n * _n / 2500, 4, 1f, 1f, P(0.3));
+            Scatter(PropKind.Tree, _n * _n / 1200, 4, 0.7, 1.1, Apart(LeafColor(), walk, 0.12));
+            Scatter(PropKind.Bench, _n * _n / 2500, 4, 1f, 1f, Apart(P(0.3), walk, 0.1));
         }
 
         public void Indoor()
         {
-            uint floor = P(0.55), wall = P(0.92);
+            uint floor = P(0.55);
+            double floorLuma = Palette.Luma(floor);
+            uint wall = Apart(P(0.92), floorLuma, 0.1);
             for (int z = 0; z < _n; z++)
                 for (int x = 0; x < _n; x++)
                     _color[I(x, z)] = x / 6 % 2 == 0 ? floor : Shade(floor, 0.93); // floor boards
@@ -291,22 +299,25 @@ public static class BiomeGenerator
                 int bx = Math.Max(x0 + w, stairs.Max(s => s.X + s.W)), bz = Math.Max(z0 + d, stairs.Max(s => s.Z + s.D));
                 if (ax < 5 || az < 5 || bx > _n - 5 || bz > _n - 5 || Overlaps(ax, az, bx - ax, bz - az, 5)) continue;
 
-                uint wood = Jitter(P(0.15 + 0.2 * _rng.Next()), x0, z0);
+                uint wood = Apart(Jitter(P(0.15 + 0.2 * _rng.Next()), x0, z0), floorLuma, 0.12);
                 AddBox(x0, z0, w, d, h, wood);
                 foreach (var s in stairs) AddBox(s.X, s.Z, s.W, s.D, s.H, Shade(wood, 1.12));
                 MarkBlocked(ax - 3, az - 3, bx - ax + 6, bz - az + 6);
                 int cups = 1 + _rng.NextInt(0, 2);
                 for (int k = 0; k < cups; k++)
                     Props.Add(new Prop(PropKind.Cup, x0 + 3 + _rng.NextInt(0, w - 6), z0 + 3 + _rng.NextInt(0, d - 6),
-                        (float)(4 + 2 * _rng.Next()), P(0.75 + 0.25 * _rng.Next())));
+                        (float)(4 + 2 * _rng.Next()), Apart(P(0.75 + 0.25 * _rng.Next()), Palette.Luma(wood), 0.1)));
                 placed++;
             }
-            Scatter(PropKind.Plant, 8, 12, 5, 8, LeafColor());
+            Scatter(PropKind.Plant, 8, 12, 5, 8, Apart(LeafColor(), floorLuma, 0.12));
         }
 
         public void Transit()
         {
-            uint ground = P(0.5), gravel = Gray(P(0.35), 0.75), rail = Shade(P(0), 0.9), platform = P(0.8);
+            uint ground = P(0.5);
+            double groundLuma = Palette.Luma(ground);
+            uint gravel = Apart(Gray(P(0.35), 0.75), groundLuma, 0.08), platform = Apart(P(0.8), groundLuma, 0.12);
+            uint rail = Apart(Shade(P(0), 0.9), Palette.Luma(gravel), 0.1);
             for (int z = 0; z < _n; z++)
                 for (int x = 0; x < _n; x++)
                     _color[I(x, z)] = Jitter(ground, x, z);
@@ -336,12 +347,13 @@ public static class BiomeGenerator
             }
             // a tunnel arch over both tracks: two pillars and a beam 9 blocks over the ground
             int ax = _c - 84, az = tracks[0] - 8, ad = tracks[1] + 8 - az;
-            uint stone = Gray(P(0.4), 0.6);
+            uint stone = Apart(Gray(P(0.4), 0.6), groundLuma, 0.1);
             AddBox(ax, az, 6, 2, 12, stone);
             AddBox(ax, az + ad - 2, 6, 2, 12, stone);
             AddBox(ax, az, 6, ad, 3, stone, lift: 9);
-            Scatter(PropKind.Bush, _n * _n / 800, 3, 0.6, 1.0, LeafColor());
-            Scatter(PropKind.Tree, _n * _n / 1500, 4, 0.8, 1.2, LeafColor());
+            uint leaf = Apart(LeafColor(), groundLuma, 0.12);
+            Scatter(PropKind.Bush, _n * _n / 800, 3, 0.6, 1.0, leaf);
+            Scatter(PropKind.Tree, _n * _n / 1500, 4, 0.8, 1.2, leaf);
         }
 
         // ------------------------------------------------------------ terrain
@@ -399,15 +411,23 @@ public static class BiomeGenerator
                 }
         }
 
-        /// <summary>Low ground takes the darker end of the palette range, high ground the lighter end.</summary>
+        /// <summary>
+        /// Low ground takes the darker end of the palette range, high ground the lighter end. Position in the range
+        /// is the column's height rank (share of columns lower than it), not its raw height, so every world uses its
+        /// whole range even when most hills sit at middle height (plan Review Focus 5).
+        /// </summary>
         void PaintGround(double from, double to, uint salt)
         {
-            int lo = _height.Min(), hi = _height.Max();
+            var count = new int[_height.Max() + 1];
+            foreach (int h in _height) count[h]++;
+            var rank = new double[count.Length];
+            for (int h = 0, below = 0; h < count.Length; below += count[h], h++)
+                rank[h] = (below + count[h] / 2.0) / _height.Length;
             for (int z = 0; z < _n; z++)
                 for (int x = 0; x < _n; x++)
                 {
                     int i = I(x, z);
-                    double t = (_height[i] - lo) / (double)Math.Max(1, hi - lo) + 0.15 * (Noise(x, z, 9, salt) - 0.5);
+                    double t = rank[_height[i]] + 0.15 * (Noise(x, z, 9, salt) - 0.5);
                     _color[i] = Jitter(P(from + (to - from) * Math.Clamp(t, 0, 1)), x, z);
                 }
         }
@@ -483,6 +503,26 @@ public static class BiomeGenerator
         /// <summary>The most saturated mid color: leaves read as the photo's liveliest color.</summary>
         uint LeafColor() =>
             _pal.Skip(1).Take(Math.Max(1, _pal.Length - 2)).OrderByDescending(Saturation).ThenBy(c => c).First();
+
+        /// <summary>Leaf, bush and rock colors for the natural biomes, apart from the ground already painted.</summary>
+        (uint Leaf, uint Bush, uint Rock) Greenery(double rockAt)
+        {
+            var dry = Enumerable.Range(0, _color.Length).Where(i => !_water[i]).Select(i => Palette.Luma(_color[i])).OrderBy(l => l).ToList();
+            double ground = dry.Count == 0 ? 0.5 : dry[dry.Count / 2];
+            uint leaf = Apart(LeafColor(), ground, 0.12);
+            return (leaf, Apart(Shade(leaf, 0.85), ground, 0.1), Apart(Gray(P(rockAt), 0.65), ground, 0.1));
+        }
+
+        /// <summary>
+        /// `c` with its brightness at least `gap` away from `from`: darker when there is room (leaves in shade read
+        /// naturally), otherwise lighter. Props and buildings never melt into the ground (plan Review Focus 5).
+        /// </summary>
+        static uint Apart(uint c, double from, double gap)
+        {
+            double l = Palette.Luma(c);
+            if (Math.Abs(l - from) >= gap) return c;
+            return Palette.WithLuma(c, from - gap >= 0.03 ? from - gap : Math.Min(1, from + gap));
+        }
 
         static double Saturation(uint c)
         {
