@@ -1,0 +1,31 @@
+part: rope_bridge
+size: 6 4 5
+# planks with rope rails; stretch along x to span a gap
+legend:
+  P = Wood secondary
+  C = Cloth accent
+stretch: x 1 4
+layer 0:
+______
+PPPPPP
+PPPPPP
+PPPPPP
+______
+layer 1:
+C....C
+......
+......
+......
+C....C
+layer 2:
+C....C
+......
+......
+......
+C....C
+layer 3:
+CCCCCC
+......
+......
+......
+CCCCCC

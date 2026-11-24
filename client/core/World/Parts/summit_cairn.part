@@ -1,0 +1,21 @@
+part: summit_cairn
+size: 3 4 3
+# stones piled on the summit
+legend:
+  S = Stone light
+layer 0:
+SSS
+SSS
+SSS
+layer 1:
+SSS
+SSS
+SSS
+layer 2:
+.S.
+SSS
+.S.
+layer 3:
+...
+.S.
+...

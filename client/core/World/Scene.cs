@@ -19,6 +19,7 @@ public static class Scenes
 
     public static IScene Create(Scene s) => s switch
     {
+        Scene.Mountain => new MountainScene(),
         _ => throw new NotSupportedException($"scene {s} is not built yet"),
     };
 }

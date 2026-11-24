@@ -1,0 +1,151 @@
+part: ruined_tower
+size: 7 18 7
+# a round stone tower; placed with blocks missing
+legend:
+  S = Stone secondary
+  D = Stone dark
+anchor: door 3 1 0
+layer 0:
+__DDD__
+_DDDDD_
+DDDDDDD
+DDDDDDD
+DDDDDDD
+_DDDDD_
+__DDD__
+layer 1:
+__...__
+_S...S_
+S.....S
+S.....S
+S.....S
+_S...S_
+__SSS__
+layer 2:
+__...__
+_S...S_
+S.....S
+S.....S
+S.....S
+_S...S_
+__SSS__
+layer 3:
+__...__
+_S...S_
+S.....S
+S.....S
+S.....S
+_S...S_
+__SSS__
+layer 4:
+__...__
+_S...S_
+S.....S
+S.....S
+S.....S
+_S...S_
+__SSS__
+layer 5:
+__...__
+_S...S_
+S.....S
+S.....S
+S.....S
+_S...S_
+__SSS__
+layer 6:
+__...__
+_S...S_
+S.....S
+S.....S
+S.....S
+_S...S_
+__SSS__
+layer 7:
+__...__
+_S...S_
+S.....S
+S.....S
+S.....S
+_S...S_
+__SSS__
+layer 8:
+__...__
+_S...S_
+S.....S
+S.....S
+S.....S
+_S...S_
+__SSS__
+layer 9:
+__...__
+_S...S_
+S.....S
+S.....S
+S.....S
+_S...S_
+__SSS__
+layer 10:
+__SSS__
+_S...S_
+S.....S
+S.....S
+S.....S
+_S...S_
+__SSS__
+layer 11:
+__SSS__
+_S...S_
+S.....S
+S.....S
+S.....S
+_S...S_
+__SSS__
+layer 12:
+__SSS__
+_S...S_
+S.....S
+S.....S
+S.....S
+_S...S_
+__SSS__
+layer 13:
+__SSS__
+_S...S_
+S.....S
+S.....S
+S.....S
+_S...S_
+__SSS__
+layer 14:
+__SSS__
+_S...S_
+S.....S
+S.....S
+S.....S
+_S...S_
+__SSS__
+layer 15:
+__SSS__
+_S...S_
+S.....S
+S.....S
+S.....S
+_S...S_
+__SSS__
+layer 16:
+__.S.__
+_....._
+.......
+S.....S
+.......
+_....._
+__.S.__
+layer 17:
+__.S.__
+_....._
+.......
+S.....S
+.......
+_....._
+__.S.__

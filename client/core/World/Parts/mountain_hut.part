@@ -1,0 +1,151 @@
+part: mountain_hut
+size: 12 13 10
+# a hut you can walk into: door 4 wide 9 high, ceiling 11 blocks
+legend:
+  W = Wood secondary
+  R = Wood dark
+  G = Glass #C8E6F0
+anchor: door 5 1 0
+layer 0:
+WWWWWWWWWWWW
+WWWWWWWWWWWW
+WWWWWWWWWWWW
+WWWWWWWWWWWW
+WWWWWWWWWWWW
+WWWWWWWWWWWW
+WWWWWWWWWWWW
+WWWWWWWWWWWW
+WWWWWWWWWWWW
+WWWWWWWWWWWW
+layer 1:
+WWWW....WWWW
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+WWWWWWWWWWWW
+layer 2:
+WWWW....WWWW
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+WWWWWWWWWWWW
+layer 3:
+WWWW....WWWW
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+WWWWWWWWWWWW
+layer 4:
+WWWW....WWWW
+W..........W
+W..........W
+G..........G
+G..........G
+G..........G
+G..........G
+W..........W
+W..........W
+WWWWWWWWWWWW
+layer 5:
+WWWW....WWWW
+W..........W
+W..........W
+G..........G
+G..........G
+G..........G
+G..........G
+W..........W
+W..........W
+WWWWWWWWWWWW
+layer 6:
+WWWW....WWWW
+W..........W
+W..........W
+G..........G
+G..........G
+G..........G
+G..........G
+W..........W
+W..........W
+WWWWWWWWWWWW
+layer 7:
+WWWW....WWWW
+W..........W
+W..........W
+G..........G
+G..........G
+G..........G
+G..........G
+W..........W
+W..........W
+WWWWWWWWWWWW
+layer 8:
+WWWW....WWWW
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+WWWWWWWWWWWW
+layer 9:
+WWWW....WWWW
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+WWWWWWWWWWWW
+layer 10:
+WWWWWWWWWWWW
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+WWWWWWWWWWWW
+layer 11:
+WWWWWWWWWWWW
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+W..........W
+WWWWWWWWWWWW
+layer 12:
+RRRRRRRRRRRR
+RRRRRRRRRRRR
+RRRRRRRRRRRR
+RRRRRRRRRRRR
+RRRRRRRRRRRR
+RRRRRRRRRRRR
+RRRRRRRRRRRR
+RRRRRRRRRRRR
+RRRRRRRRRRRR
+RRRRRRRRRRRR
