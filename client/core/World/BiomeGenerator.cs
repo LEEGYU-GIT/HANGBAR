@@ -598,7 +598,7 @@ public static class BiomeGenerator
 /// <summary>The photo itself, standing in the world as a pixel wall (design §6-3: a landmark of your own photo).</summary>
 public static class Mural
 {
-    static readonly ushort Frame = Block.Solid(0x3A3A3A);
+    static readonly uint Frame = Block.Solid(0x3A3A3A);
 
     /// <summary>
     /// The photo, cropped to width:height around its centre and shrunk to width×height blocks, as a 1-block-thick

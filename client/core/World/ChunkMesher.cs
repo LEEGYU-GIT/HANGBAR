@@ -38,9 +38,9 @@ public static class ChunkMesher
             for (int z = cz * n; z < Math.Min((cz + 1) * n, w.SizeZ); z++)
                 for (int x = cx * n; x < Math.Min((cx + 1) * n, w.SizeX); x++)
                 {
-                    ushort b = w.Get(x, y, z);
+                    uint b = w.Get(x, y, z);
                     if (Block.IsSolid(b)) AddSolidFaces(w, solid, x, y, z, Block.ColorOf(b));
-                    else if (b == Block.Water && w.Get(x, y + 1, z) == Block.Air) AddWaterTop(water, x, y, z);
+                    else if (Block.IsWater(b) && w.Get(x, y + 1, z) == Block.Air) AddWaterTop(water, x, y, z);
                 }
         return (solid, water);
     }

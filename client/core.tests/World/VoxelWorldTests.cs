@@ -40,9 +40,9 @@ public class VoxelWorldTests
         w.Set(15, 0, 0, 2);
         w.Set(16, 0, 0, 3);
         w.Set(39, 19, 39, 4);
-        Assert.Equal((ushort)2, w.Get(15, 0, 0));
-        Assert.Equal((ushort)3, w.Get(16, 0, 0));
-        Assert.Equal((ushort)4, w.Get(39, 19, 39));
+        Assert.Equal(2u, w.Get(15, 0, 0));
+        Assert.Equal(3u, w.Get(16, 0, 0));
+        Assert.Equal(4u, w.Get(39, 19, 39));
         Assert.Equal((3, 2, 3), (w.ChunksX, w.ChunksY, w.ChunksZ));
     }
 

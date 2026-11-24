@@ -4,9 +4,9 @@ namespace Hangbar.Core.Tests.World;
 
 public class ChunkMesherTests
 {
-    static readonly ushort White = Block.Solid(0xFFFFFF);
+    static readonly uint White = Block.Solid(0xFFFFFF);
 
-    static VoxelWorld World(int sx = 16, int sy = 16, int sz = 16, params (int X, int Y, int Z, ushort B)[] blocks)
+    static VoxelWorld World(int sx = 16, int sy = 16, int sz = 16, params (int X, int Y, int Z, uint B)[] blocks)
     {
         var w = new VoxelWorld(sx, sy, sz);
         foreach (var b in blocks) w.Set(b.X, b.Y, b.Z, b.B);

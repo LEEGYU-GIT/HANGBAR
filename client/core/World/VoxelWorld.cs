@@ -13,7 +13,7 @@ public sealed class VoxelWorld
     public int ChunksZ { get; }
     public int AllocatedChunks { get; private set; }
 
-    readonly ushort[]?[] _chunks;
+    readonly uint[]?[] _chunks;
 
     public VoxelWorld(int sizeX, int sizeY, int sizeZ)
     {
@@ -21,7 +21,7 @@ public sealed class VoxelWorld
         ChunksX = (sizeX + ChunkSize - 1) / ChunkSize;
         ChunksY = (sizeY + ChunkSize - 1) / ChunkSize;
         ChunksZ = (sizeZ + ChunkSize - 1) / ChunkSize;
-        _chunks = new ushort[]?[ChunksX * ChunksY * ChunksZ];
+        _chunks = new uint[]?[ChunksX * ChunksY * ChunksZ];
     }
 
     bool InBounds(int x, int y, int z) => x >= 0 && y >= 0 && z >= 0 && x < SizeX && y < SizeY && z < SizeZ;
@@ -30,14 +30,14 @@ public sealed class VoxelWorld
 
     int ChunkIndex(int x, int y, int z) => ((y / ChunkSize) * ChunksZ + z / ChunkSize) * ChunksX + x / ChunkSize;
 
-    public ushort Get(int x, int y, int z)
+    public uint Get(int x, int y, int z)
     {
         if (!InBounds(x, y, z)) return Block.Air;
         var c = _chunks[ChunkIndex(x, y, z)];
         return c is null ? Block.Air : c[Local(x, y, z)];
     }
 
-    public void Set(int x, int y, int z, ushort b)
+    public void Set(int x, int y, int z, uint b)
     {
         if (!InBounds(x, y, z)) return;
         int ci = ChunkIndex(x, y, z);
@@ -45,7 +45,7 @@ public sealed class VoxelWorld
         if (c is null)
         {
             if (b == Block.Air) return;
-            c = _chunks[ci] = new ushort[ChunkSize * ChunkSize * ChunkSize];
+            c = _chunks[ci] = new uint[ChunkSize * ChunkSize * ChunkSize];
             AllocatedChunks++;
         }
         c[Local(x, y, z)] = b;
@@ -60,7 +60,7 @@ public sealed class VoxelWorld
             {
                 int i = map.Index(x, z), h = Math.Min(map.Height[i], sizeY);
                 uint c = map.Color[i];
-                ushort surface = Block.Solid(c), dirt = Block.Solid(Mix(c, 0.6, 0)), rock = Block.Solid(Mix(c, 0.35, 0x50 * 0.65));
+                uint surface = Block.Solid(c), dirt = Block.Solid(Mix(c, 0.6, 0)), rock = Block.Solid(Mix(c, 0.35, 0x50 * 0.65));
                 for (int y = 0; y < h; y++)
                     w.Set(x, y, z, y == h - 1 ? surface : y >= h - 4 ? dirt : rock);
                 if (map.Water[i])
@@ -84,7 +84,7 @@ public sealed class VoxelWorld
                 for (int x = Math.Max(0, b.X); x < Math.Min(t.Size, b.X + b.W); x++)
                     ground = Math.Max(ground, t.Height[t.Index(x, z)]);
             int bottom = ground + b.Lift, top = bottom + b.Height;
-            ushort solid = Block.Solid(b.Color), band = Block.Solid(Mix(b.Color, 0.72, 0));
+            uint solid = Block.Solid(b.Color), band = Block.Solid(Mix(b.Color, 0.72, 0));
             bool windows = m.Biome == Biome.City && b.Lift == 0;
             for (int z = Math.Max(0, b.Z); z < Math.Min(t.Size, b.Z + b.D); z++)
                 for (int x = Math.Max(0, b.X); x < Math.Min(t.Size, b.X + b.W); x++)
