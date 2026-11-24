@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="World/biome-labels.csv" LogicalName="biome-labels.csv" />
+  </ItemGroup>
+
 </Project>
