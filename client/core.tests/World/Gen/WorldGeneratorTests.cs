@@ -50,6 +50,9 @@ public class WorldGeneratorTests
             {
                 int s = SurfaceOf(w, x, z);
                 if (s < 60 || Default.Value.Structures.Any(p => x >= p.Min.X && x <= p.Max.X && z >= p.Min.Z && z <= p.Max.Z)) continue;
+                bool dug = false; // caves (Task 7) cut through some columns: check only untouched ones
+                for (int y = 2; y < s && !dug; y++) dug = !Block.IsSolid(w.Get(x, y, z));
+                if (dug) continue;
                 checkedColumns++;
                 Assert.Equal(Material.Grass, Block.MaterialOf(w.Get(x, s - 1, z)));
                 for (int k = 2; k <= 4; k++) Assert.Equal(Material.Soil, Block.MaterialOf(w.Get(x, s - k, z)));

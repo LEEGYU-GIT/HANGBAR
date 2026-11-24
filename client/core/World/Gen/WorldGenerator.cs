@@ -15,6 +15,7 @@ public static class WorldGenerator
         scene.Shape(ctx);
         EdgeBand.Apply(ctx);
         Strata.Fill(ctx);
+        Underground.Carve(ctx);
         scene.Build(ctx);
         var view = scene.View(ctx);
         var landmark = ctx.Landmark ?? throw new InvalidOperationException($"scene {scene.Kind} placed no landmark");
