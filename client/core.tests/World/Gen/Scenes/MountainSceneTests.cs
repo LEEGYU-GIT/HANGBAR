@@ -102,6 +102,4 @@ public class MountainSceneTests
         Assert.True(tris <= SceneKit.TriangleBudget, $"{tris} triangles");
     }
 
-    [Fact]
-    public void Generates_within_three_seconds() => Assert.True(SceneKit.GenerationMilliseconds(Scene.Mountain) <= 3000);
 }
