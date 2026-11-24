@@ -1,3 +1,4 @@
+using Hangbar.Core.World.Gen;
 using Hangbar.Core.World;
 
 namespace Hangbar.Core.Tests.World;
@@ -15,50 +16,14 @@ public class BiomeGeneratorTests
 
     static PixelImage Photo => ImageFit.Prepare(SamplePhotos.Meadow(), N);
 
-    // ---- walking: a surface is an open cell with a solid block under it and 7 free blocks (1.75 m) of headroom
+    // ---- walking (shared rule: Walkability — solid below, 7 free blocks, side steps of at most 2)
 
-    static List<int>[] Surfaces(VoxelWorld w)
-    {
-        var s = new List<int>[w.SizeX * w.SizeZ];
-        for (int z = 0; z < w.SizeZ; z++)
-            for (int x = 0; x < w.SizeX; x++)
-            {
-                var list = s[z * w.SizeX + x] = new List<int>();
-                for (int y = 1; y <= w.SizeY; y++)
-                {
-                    if (!Block.IsSolid(w.Get(x, y - 1, z))) continue;
-                    bool free = true;
-                    for (int k = 0; k < 7 && free; k++) free = !Block.IsSolid(w.Get(x, y + k, z));
-                    if (free) list.Add(y);
-                }
-            }
-        return s;
-    }
-
-    /// <summary>Columns reached from (sx, sy, sz) by stepping to a side neighbour at most 2 blocks up or down.</summary>
+    /// <summary>Columns reached from (sx, sy, sz); the spawn itself must be open ground, not inside a building.</summary>
     static bool[] Walk(VoxelWorld w, int sx, int sy, int sz)
     {
-        var surfaces = Surfaces(w);
-        Assert.Contains(sy, surfaces[sz * w.SizeX + sx]); // the spawn is open ground, not inside a building
-        var reached = new bool[w.SizeX * w.SizeZ];
-        var seen = new HashSet<(int, int, int)> { (sx, sy, sz) };
-        var queue = new Queue<(int X, int Y, int Z)>();
-        queue.Enqueue((sx, sy, sz));
-        while (queue.Count > 0)
-        {
-            var (x, y, z) = queue.Dequeue();
-            reached[z * w.SizeX + x] = true;
-            foreach (var (dx, dz) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
-            {
-                int nx = x + dx, nz = z + dz;
-                if (nx < 0 || nz < 0 || nx >= w.SizeX || nz >= w.SizeZ) continue;
-                foreach (int ny in surfaces[nz * w.SizeX + nx])
-                    if (Math.Abs(ny - y) <= 2 && seen.Add((nx, ny, nz))) queue.Enqueue((nx, ny, nz));
-            }
-        }
-        return reached;
+        Assert.True(Walkability.IsStandable(w, sx, sy, sz));
+        return Walkability.ReachColumns(w, new BlockPos(sx, sy, sz));
     }
-
     static bool[] WalkFromSpawn(BiomeMap m, out VoxelWorld w)
     {
         w = VoxelWorld.FromBiomeMap(m, Photo);

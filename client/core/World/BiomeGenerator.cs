@@ -1,3 +1,5 @@
+using Hangbar.Core.World.Gen;
+
 namespace Hangbar.Core.World;
 
 /// <summary>
@@ -33,11 +35,12 @@ public static class BiomeGenerator
 
     sealed class Gen
     {
-        const int NoPin = int.MinValue, Far = 1 << 20;
+        const int NoPin = Slope.NoPin;
 
         readonly uint[] _pal;
-        readonly ulong _worldSeed, _seed;
+        readonly ulong _worldSeed;
         readonly Rng _rng;
+        readonly ValueNoise _noise;
         readonly int _n, _c;
         readonly int[] _height, _pin;
         readonly uint[] _color;
@@ -53,8 +56,8 @@ public static class BiomeGenerator
         {
             _pal = palette;
             _worldSeed = worldSeed;
-            _seed = noiseSeed;
             _rng = new Rng(noiseSeed);
+            _noise = new ValueNoise(noiseSeed);
             _n = n;
             _c = n / 2;
             _height = new int[n * n];
@@ -375,41 +378,7 @@ public static class BiomeGenerator
         /// the lower envelope of the hills, clamped between the lowest and highest slope-2 cones the pins allow.
         /// All three are 2-Lipschitz on the grid, so the result is too.
         /// </summary>
-        void Shape()
-        {
-            var env = (int[])_height.Clone();
-            MinPlus(env);
-            var up = _pin.Select(p => p == NoPin ? Far : p).ToArray();
-            var lo = _pin.Select(p => p == NoPin ? -Far : p).ToArray();
-            MinPlus(up);
-            for (int i = 0; i < lo.Length; i++) lo[i] = -lo[i];
-            MinPlus(lo);
-            for (int i = 0; i < lo.Length; i++)
-            {
-                lo[i] = -lo[i];
-                if (lo[i] > up[i]) throw new InvalidOperationException("pinned heights are too steep for each other");
-                _height[i] = Math.Min(Math.Max(env[i], lo[i]), up[i]);
-            }
-        }
-
-        /// <summary>a[p] = min over q of a[q] + 2·(grid distance p..q), in two sweeps.</summary>
-        void MinPlus(int[] a)
-        {
-            for (int z = 0; z < _n; z++)
-                for (int x = 0; x < _n; x++)
-                {
-                    int i = I(x, z);
-                    if (x > 0) a[i] = Math.Min(a[i], a[i - 1] + 2);
-                    if (z > 0) a[i] = Math.Min(a[i], a[i - _n] + 2);
-                }
-            for (int z = _n - 1; z >= 0; z--)
-                for (int x = _n - 1; x >= 0; x--)
-                {
-                    int i = I(x, z);
-                    if (x < _n - 1) a[i] = Math.Min(a[i], a[i + 1] + 2);
-                    if (z < _n - 1) a[i] = Math.Min(a[i], a[i + _n] + 2);
-                }
-        }
+        void Shape() => Array.Copy(Slope.Limit(_height, _pin, _n, 2), _height, _height.Length);
 
         /// <summary>
         /// Low ground takes the darker end of the palette range, high ground the lighter end. Position in the range
@@ -555,43 +524,9 @@ public static class BiomeGenerator
 
         // ------------------------------------------------------------ randomness
 
-        double Noise(double x, double z, int cell, uint salt)
-        {
-            double fx = x / cell, fz = z / cell;
-            int ix = (int)Math.Floor(fx), iz = (int)Math.Floor(fz);
-            double tx = fx - ix, tz = fz - iz;
-            tx = tx * tx * (3 - 2 * tx);
-            tz = tz * tz * (3 - 2 * tz);
-            double a = Hash01(ix, iz, salt), b = Hash01(ix + 1, iz, salt), c = Hash01(ix, iz + 1, salt), d = Hash01(ix + 1, iz + 1, salt);
-            return a + (b - a) * tx + (c - a) * tz + (a - b - c + d) * tx * tz;
-        }
+        double Noise(double x, double z, int cell, uint salt) => _noise.Sample(x, z, cell, salt);
 
-        double Hash01(int x, int z, uint salt) =>
-            (Rng.Mix(_seed ^ (ulong)(uint)x * 0x9E3779B1UL ^ (ulong)(uint)z << 32 ^ (ulong)salt * 0x85EBCA77C2B2AE63UL) >> 11) * (1.0 / (1UL << 53));
-    }
-
-    /// <summary>SplitMix64: the same numbers on every machine and .NET version.</summary>
-    sealed class Rng(ulong state)
-    {
-        ulong _s = state;
-
-        public static ulong Mix(ulong z)
-        {
-            z += 0x9E3779B97F4A7C15UL;
-            z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9UL;
-            z = (z ^ (z >> 27)) * 0x94D049BB133111EBUL;
-            return z ^ (z >> 31);
-        }
-
-        /// <summary>Uniform in [0, 1).</summary>
-        public double Next()
-        {
-            _s += 0x9E3779B97F4A7C15UL;
-            return (Mix(_s) >> 11) * (1.0 / (1UL << 53));
-        }
-
-        /// <summary>Uniform integer in [min, maxExclusive); min when the range is empty.</summary>
-        public int NextInt(int min, int maxExclusive) => maxExclusive <= min ? min : min + (int)(Next() * (maxExclusive - min));
+        double Hash01(int x, int z, uint salt) => _noise.Hash01(x, z, salt);
     }
 }
 
