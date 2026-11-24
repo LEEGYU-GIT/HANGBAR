@@ -1,0 +1,21 @@
+part: pier_deck
+size: 5 3 4                  # x runs out to sea; posts every 4 blocks along the railings
+legend:
+  W = Wood secondary
+  R = Wood dark
+stretch: x 0 3
+layer 0:
+WWWWW
+WWWWW
+WWWWW
+WWWWW
+layer 1:
+R...R
+.....
+.....
+R...R
+layer 2:
+RRRRR
+.....
+.....
+RRRRR

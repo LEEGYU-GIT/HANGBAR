@@ -1,0 +1,115 @@
+part: beach_hut
+size: 10 12 8                # door 4 wide 9 high at the front (z=0), room ceiling 10 blocks, tinted windows
+legend:
+  W = Wood light
+  R = Wood accent
+  D = DarkGlass #2E3A44
+anchor: door 4 1 0
+layer 0:
+WWWWWWWWWW
+WWWWWWWWWW
+WWWWWWWWWW
+WWWWWWWWWW
+WWWWWWWWWW
+WWWWWWWWWW
+WWWWWWWWWW
+WWWWWWWWWW
+layer 1:
+WWW....WWW
+W........W
+W........W
+W........W
+W........W
+W........W
+W........W
+WWWWWWWWWW
+layer 2:
+WWW....WWW
+W........W
+W........W
+W........W
+W........W
+W........W
+W........W
+WWWWWWWWWW
+layer 3:
+WWW....WWW
+W........W
+W........W
+W........W
+W........W
+W........W
+W........W
+WWWWWWWWWW
+layer 4:
+WDW....WDW
+W........W
+D........D
+D........D
+D........D
+D........D
+W........W
+WWWWWWWWWW
+layer 5:
+WDW....WDW
+W........W
+D........D
+D........D
+D........D
+D........D
+W........W
+WWWWWWWWWW
+layer 6:
+WDW....WDW
+W........W
+D........D
+D........D
+D........D
+D........D
+W........W
+WWWWWWWWWW
+layer 7:
+WWW....WWW
+W........W
+W........W
+W........W
+W........W
+W........W
+W........W
+WWWWWWWWWW
+layer 8:
+WWW....WWW
+W........W
+W........W
+W........W
+W........W
+W........W
+W........W
+WWWWWWWWWW
+layer 9:
+WWW....WWW
+W........W
+W........W
+W........W
+W........W
+W........W
+W........W
+WWWWWWWWWW
+layer 10:
+WWWWWWWWWW
+W........W
+W........W
+W........W
+W........W
+W........W
+W........W
+WWWWWWWWWW
+layer 11:
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR

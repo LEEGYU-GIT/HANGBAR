@@ -1,0 +1,249 @@
+part: lighthouse
+size: 7 30 7                 # banded tower on a stone base, gallery, lantern, roof
+legend:
+  S = Stone secondary
+  B = Brick #F2F2F2
+  C = Brick #C0392B
+  M = Metal dark
+  G = Glass #C8E6F0
+  L = Glass #FFE9A8
+layer 0:
+SSSSSSS
+SSSSSSS
+SSSSSSS
+SSSSSSS
+SSSSSSS
+SSSSSSS
+SSSSSSS
+layer 1:
+SSSSSSS
+SSSSSSS
+SSSSSSS
+SSSSSSS
+SSSSSSS
+SSSSSSS
+SSSSSSS
+layer 2:
+_______
+_BBBBB_
+_B...B_
+_B...B_
+_B...B_
+_BBBBB_
+_______
+layer 3:
+_______
+_BBBBB_
+_B...B_
+_B...B_
+_B...B_
+_BBBBB_
+_______
+layer 4:
+_______
+_BBBBB_
+_B...B_
+_B...B_
+_B...B_
+_BBBBB_
+_______
+layer 5:
+_______
+_BBBBB_
+_B...B_
+_B...B_
+_B...B_
+_BBBBB_
+_______
+layer 6:
+_______
+_CCCCC_
+_C...C_
+_C...C_
+_C...C_
+_CCCCC_
+_______
+layer 7:
+_______
+_CCCCC_
+_C...C_
+_C...C_
+_C...C_
+_CCCCC_
+_______
+layer 8:
+_______
+_CCCCC_
+_C...C_
+_C...C_
+_C...C_
+_CCCCC_
+_______
+layer 9:
+_______
+_CCCCC_
+_C...C_
+_C...C_
+_C...C_
+_CCCCC_
+_______
+layer 10:
+_______
+_BBBBB_
+_B...B_
+_B...B_
+_B...B_
+_BBBBB_
+_______
+layer 11:
+_______
+_BBBBB_
+_B...B_
+_B...B_
+_B...B_
+_BBBBB_
+_______
+layer 12:
+_______
+_BBBBB_
+_B...B_
+_B...B_
+_B...B_
+_BBBBB_
+_______
+layer 13:
+_______
+_BBBBB_
+_B...B_
+_B...B_
+_B...B_
+_BBBBB_
+_______
+layer 14:
+_______
+_CCCCC_
+_C...C_
+_C...C_
+_C...C_
+_CCCCC_
+_______
+layer 15:
+_______
+_CCCCC_
+_C...C_
+_C...C_
+_C...C_
+_CCCCC_
+_______
+layer 16:
+_______
+_CCCCC_
+_C...C_
+_C...C_
+_C...C_
+_CCCCC_
+_______
+layer 17:
+_______
+_CCCCC_
+_C...C_
+_C...C_
+_C...C_
+_CCCCC_
+_______
+layer 18:
+_______
+_BBBBB_
+_B...B_
+_B...B_
+_B...B_
+_BBBBB_
+_______
+layer 19:
+_______
+_BBBBB_
+_B...B_
+_B...B_
+_B...B_
+_BBBBB_
+_______
+layer 20:
+_______
+_BBBBB_
+_B...B_
+_B...B_
+_B...B_
+_BBBBB_
+_______
+layer 21:
+_______
+_BBBBB_
+_B...B_
+_B...B_
+_B...B_
+_BBBBB_
+_______
+layer 22:
+_______
+_CCCCC_
+_C...C_
+_C...C_
+_C...C_
+_CCCCC_
+_______
+layer 23:
+_______
+_CCCCC_
+_C...C_
+_C...C_
+_C...C_
+_CCCCC_
+_______
+layer 24:
+MMMMMMM
+MMMMMMM
+MMMMMMM
+MMMMMMM
+MMMMMMM
+MMMMMMM
+MMMMMMM
+layer 25:
+M_____M
+_______
+__GGG__
+__GLG__
+__GGG__
+_______
+M_____M
+layer 26:
+M_____M
+_______
+__GGG__
+__GLG__
+__GGG__
+_______
+M_____M
+layer 27:
+M_____M
+_______
+__GGG__
+__GLG__
+__GGG__
+_______
+M_____M
+layer 28:
+_______
+_MMMMM_
+_MMMMM_
+_MMMMM_
+_MMMMM_
+_MMMMM_
+_______
+layer 29:
+_______
+_______
+__MMM__
+__MMM__
+__MMM__
+_______
+_______

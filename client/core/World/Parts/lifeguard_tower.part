@@ -1,0 +1,84 @@
+part: lifeguard_tower
+size: 5 13 5                 # four legs, a platform 8 up with a rail, a cloth roof
+legend:
+  L = Wood dark
+  W = Wood secondary
+  C = Cloth accent
+layer 0:
+L___L
+_____
+_____
+_____
+L___L
+layer 1:
+L___L
+_____
+_____
+_____
+L___L
+layer 2:
+L___L
+_____
+_____
+_____
+L___L
+layer 3:
+L___L
+_____
+_____
+_____
+L___L
+layer 4:
+L___L
+_____
+_____
+_____
+L___L
+layer 5:
+L___L
+_____
+_____
+_____
+L___L
+layer 6:
+L___L
+_____
+_____
+_____
+L___L
+layer 7:
+L___L
+_____
+_____
+_____
+L___L
+layer 8:
+WWWWW
+WWWWW
+WWWWW
+WWWWW
+WWWWW
+layer 9:
+WWWWW
+W...W
+W...W
+W...W
+WWWWW
+layer 10:
+L...L
+.....
+.....
+.....
+L...L
+layer 11:
+L...L
+.....
+.....
+.....
+L...L
+layer 12:
+CCCCC
+CCCCC
+CCCCC
+CCCCC
+CCCCC

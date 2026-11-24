@@ -1,0 +1,12 @@
+part: pier_post
+size: 1 4 1                  # stacked from the sea floor up to the deck
+legend:
+  P = Wood dark
+layer 0:
+P
+layer 1:
+P
+layer 2:
+P
+layer 3:
+P

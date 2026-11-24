@@ -20,11 +20,14 @@ public static class Render
             {
                 int z = s - x, top = tops[z * n + x];
                 if (top < 0) continue;
-                int front = Math.Min(Top(tops, n, x + 1, z), Top(tops, n, x, z + 1));
-                for (int y = Math.Max(0, front); y <= top; y++)
+                for (int y = 0; y <= top; y++)
                 {
                     uint b = w.Get(x, y, z);
                     if (b == Block.Air) continue;
+                    // only blocks with a face open to the air in front or above show (overhangs no longer hide walls)
+                    bool open = x + 1 >= n || z + 1 >= n || w.Get(x + 1, y, z) == Block.Air || w.Get(x, y, z + 1) == Block.Air ||
+                                y == top || w.Get(x, y + 1, z) == Block.Air;
+                    if (!open) continue;
                     uint col = Block.IsWater(b) ? WaterColor : Block.ColorOf(b);
                     int sx = (x - z) * 2 + offX, sy = (x + z) - y * 2 + offY;
                     c.Fill(sx - 2, sy, 2, 2, Shade(col, 0.78));   // left side
@@ -115,8 +118,6 @@ public static class Render
             }
         return t;
     }
-
-    static int Top(int[] tops, int n, int x, int z) => x >= n || z >= n ? -1 : tops[z * n + x];
 
     static void Mark(Canvas c, int x, int z, int scale, uint rgb) => c.Fill(x * scale - 3, z * scale - 3, scale + 6, scale + 6, rgb);
 
