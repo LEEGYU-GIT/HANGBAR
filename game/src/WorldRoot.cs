@@ -139,12 +139,22 @@ public partial class WorldRoot : Node3D
             CullMode = BaseMaterial3D.CullModeEnum.Disabled,
             Roughness = 0.1f,
         };
+        var glassMat = new StandardMaterial3D
+        {
+            VertexColorUseAsAlbedo = true,
+            VertexColorIsSrgb = true,
+            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+            AlbedoColor = new Color(1, 1, 1, 0.35f),
+            CullMode = BaseMaterial3D.CullModeEnum.Disabled,
+            Roughness = 0.05f,
+        };
         int tris = 0;
         for (int cy = 0; cy < World.ChunksY; cy++)
             for (int cz = 0; cz < World.ChunksZ; cz++)
                 for (int cx = 0; cx < World.ChunksX; cx++)
                 {
-                    var (solid, water) = ChunkMesher.Build(World, cx, cy, cz);
+                    var built = ChunkMesher.Build(World, cx, cy, cz);
+                    var (solid, glass, water) = (built.Opaque, built.Glass, built.Water);
                     if (solid.TriangleCount > 0)
                     {
                         var mi = new MeshInstance3D { Mesh = ToMesh(solid), MaterialOverride = solidMat, Name = $"C{cx}_{cy}_{cz}" };
@@ -154,6 +164,19 @@ public partial class WorldRoot : Node3D
                         AddChild(mi);
                         ChunkNodes++;
                         tris += solid.TriangleCount;
+                    }
+                    if (glass.TriangleCount > 0)
+                    {
+                        var gi = new MeshInstance3D
+                        {
+                            Mesh = ToMesh(glass), MaterialOverride = glassMat, Name = $"G{cx}_{cy}_{cz}",
+                            CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+                        };
+                        var body = new StaticBody3D();
+                        body.AddChild(new CollisionShape3D { Shape = new ConcavePolygonShape3D { Data = Faces(glass), BackfaceCollision = true } });
+                        gi.AddChild(body);
+                        AddChild(gi);
+                        tris += glass.TriangleCount;
                     }
                     if (water.TriangleCount > 0)
                     {
@@ -174,17 +197,20 @@ public partial class WorldRoot : Node3D
         var pos = new Vector3[n];
         var nrm = new Vector3[n];
         var col = new Color[n];
+        var uv2 = new Vector2[n];
         for (int i = 0; i < n; i++)
         {
             pos[i] = new Vector3(m.Positions[i * 3], m.Positions[i * 3 + 1], m.Positions[i * 3 + 2]);
             nrm[i] = new Vector3(m.Normals[i * 3], m.Normals[i * 3 + 1], m.Normals[i * 3 + 2]);
             col[i] = new Color(m.Colors[i * 4], m.Colors[i * 4 + 1], m.Colors[i * 4 + 2], m.Colors[i * 4 + 3]);
+            if (m.Uv2.Count == n * 2) uv2[i] = new Vector2(m.Uv2[i * 2], m.Uv2[i * 2 + 1]); // material, state
         }
         var arrays = new Godot.Collections.Array();
         arrays.Resize((int)Mesh.ArrayType.Max);
         arrays[(int)Mesh.ArrayType.Vertex] = pos;
         arrays[(int)Mesh.ArrayType.Normal] = nrm;
         arrays[(int)Mesh.ArrayType.Color] = col;
+        arrays[(int)Mesh.ArrayType.TexUV2] = uv2;
         arrays[(int)Mesh.ArrayType.Index] = m.Indices.ToArray();
         var mesh = new ArrayMesh();
         mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
