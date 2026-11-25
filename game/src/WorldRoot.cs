@@ -23,6 +23,7 @@ public partial class WorldRoot : Node3D
     {
         foreach (var a in OS.GetCmdlineUserArgs())
             if (a.StartsWith("--") && a.Contains('=')) Args[a[2..a.IndexOf('=')]] = a[(a.IndexOf('=') + 1)..];
+        Style.Soft = Args.GetValueOrDefault("style") == "soft"; // SPIKE: style test
 
         var sw = Stopwatch.StartNew();
         PixelImage? photo = null;
@@ -188,14 +189,37 @@ public partial class WorldRoot : Node3D
             SdfgiEnabled = false,
             VolumetricFogEnabled = false,
         };
-        AddChild(new WorldEnvironment { Environment = env });
-        AddChild(new DirectionalLight3D
+        var sun = new DirectionalLight3D
         {
             RotationDegrees = new Vector3(-50, -35, 0),
             LightEnergy = 1.3f,
             ShadowEnabled = medium,
             DirectionalShadowMaxDistance = 60,
-        });
+        };
+        if (Style.Soft)
+        {
+            // SPIKE: warm, saturated sky; distance fades into a soft haze; warmer sun, softer shadows
+            var haze = new Color(0.86f, 0.9f, 0.95f);
+            sky.SkyTopColor = new Color(0.32f, 0.58f, 0.95f);
+            sky.SkyHorizonColor = haze;
+            sky.GroundHorizonColor = haze;
+            sky.GroundBottomColor = haze;
+            env.AmbientLightEnergy = 1.05f;
+            env.TonemapExposure = 1.0f;
+            env.FogEnabled = true;
+            env.FogLightColor = haze;
+            env.FogDensity = 0.012f;
+            env.FogAerialPerspective = 0.7f;
+            env.FogSkyAffect = 0.0f;
+            env.AdjustmentEnabled = true;
+            env.AdjustmentSaturation = 1.15f;
+            sun.LightColor = new Color(1f, 0.94f, 0.84f);
+            sun.LightEnergy = 1.25f;
+            sun.ShadowBlur = 2.5f;
+            sun.ShadowOpacity = 0.75f;
+        }
+        AddChild(new WorldEnvironment { Environment = env });
+        AddChild(sun);
         GetViewport().ScreenSpaceAA = medium ? Viewport.ScreenSpaceAAEnum.Fxaa : Viewport.ScreenSpaceAAEnum.Disabled;
     }
 }

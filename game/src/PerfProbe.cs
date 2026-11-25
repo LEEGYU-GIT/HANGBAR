@@ -54,6 +54,7 @@ public partial class PerfProbe : CanvasLayer
     public async void TakeShots(string dir, Hangbar.Core.World.PixelImage prepared)
     {
         System.IO.Directory.CreateDirectory(dir);
+        _shotDir = dir;
         _world.Player.InputEnabled = false;
         var cam = new Camera3D { Fov = 60, Far = 400 };
         _world.AddChild(cam);
@@ -73,6 +74,7 @@ public partial class PerfProbe : CanvasLayer
         await Shot("overview.png");
         _world.Player.Camera.MakeCurrent();
         await Shot("ground.png");
+        if (Style.Soft) await MotionShots(cam, Shot);
         cam.MakeCurrent();
         cam.Projection = Camera3D.ProjectionType.Orthogonal;
         cam.Size = size;
@@ -90,6 +92,50 @@ public partial class PerfProbe : CanvasLayer
         GD.Print($"[shots] saved 4 images ({feet.Y:0.00} m spawn height)");
         GetTree().Quit();
     }
+
+    /// <summary>
+    /// SPIKE (style test): face.png from in front of the character, then walk1–3.png while it walks seen from the side,
+    /// and jump1–3.png in the air and landing. Puts the character back where it started afterwards.
+    /// </summary>
+    async Task MotionShots(Camera3D cam, Func<string, Task> shot)
+    {
+        var p = _world.Player;
+        var start = p.GlobalPosition;
+        var fwd = -p.GetNode<Node3D>("Figure3D").GlobalTransform.Basis.Z with { Y = 0 };
+        if (fwd.LengthSquared() < 1e-4f) fwd = Vector3.Forward;
+        fwd = fwd.Normalized();
+        var side = fwd.Cross(Vector3.Up).Normalized();
+        cam.Projection = Camera3D.ProjectionType.Perspective;
+        cam.Fov = 45;
+        cam.MakeCurrent();
+        cam.LookAtFromPosition(start + fwd * 2.6f + Vector3.Up * 1.4f, start + Vector3.Up * 1.1f, Vector3.Up);
+        await shot("face.png");
+
+        p.AutoWalk = fwd;
+        for (int i = 1; i <= 3; i++)
+        {
+            await ToSignal(GetTree().CreateTimer(0.22), SceneTreeTimer.SignalName.Timeout);
+            var at = p.GlobalPosition;
+            cam.LookAtFromPosition(at + side * 3.2f + Vector3.Up * 1.3f - fwd * 0.3f, at + Vector3.Up * 0.9f, Vector3.Up);
+            for (int f = 0; f < 2; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            GetViewport().GetTexture().GetImage().SavePng(System.IO.Path.Combine(_shotDir, $"walk{i}.png"));
+        }
+        p.Velocity = p.Velocity with { Y = 5.5f };
+        foreach (var (i, wait) in new[] { (1, 0.15), (2, 0.35), (3, 0.5) })
+        {
+            await ToSignal(GetTree().CreateTimer(wait - (i == 1 ? 0 : i == 2 ? 0.15 : 0.35)), SceneTreeTimer.SignalName.Timeout);
+            var at = p.GlobalPosition;
+            cam.LookAtFromPosition(at + side * 3.2f + Vector3.Up * 1.0f - fwd * 0.3f, at + Vector3.Up * 0.9f, Vector3.Up);
+            for (int f = 0; f < 2; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            GetViewport().GetTexture().GetImage().SavePng(System.IO.Path.Combine(_shotDir, $"jump{i}.png"));
+        }
+        p.AutoWalk = null;
+        p.GlobalPosition = start;
+        p.Velocity = Vector3.Zero;
+        cam.Fov = 60;
+    }
+
+    string _shotDir = "";
 
     public override void _UnhandledInput(InputEvent e)
     {

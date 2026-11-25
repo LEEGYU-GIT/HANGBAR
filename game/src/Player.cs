@@ -18,7 +18,7 @@ public partial class Player : CharacterBody3D
 
     Node3D _yaw = null!;
     SpringArm3D _arm = null!;
-    Figure _figure = null!;
+    Node3D _figure = null!;
     float _gravity;
 
     public override void _Ready()
@@ -31,7 +31,8 @@ public partial class Player : CharacterBody3D
             Shape = new CylinderShape3D { Radius = Radius, Height = Tall },
             Position = new Vector3(0, Tall / 2, 0),
         });
-        _figure = new Figure();
+        _figure = Style.Soft ? new SoftFigure() : new Figure();
+        _figure.Name = "Figure3D";
         AddChild(_figure);
 
         _yaw = new Node3D { Position = new Vector3(0, 1.6f, 0) };

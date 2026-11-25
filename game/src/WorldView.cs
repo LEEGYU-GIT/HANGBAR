@@ -11,7 +11,7 @@ public static class WorldView
 {
     public static (int Triangles, int Chunks) Build(Node3D parent, VoxelWorld world)
     {
-        var solidMat = new ShaderMaterial { Shader = GD.Load<Shader>("res://shaders/block.gdshader") };
+        var solidMat = new ShaderMaterial { Shader = GD.Load<Shader>(Style.Soft ? "res://shaders/soft_block.gdshader" : "res://shaders/block.gdshader") };
         // Block colours come straight from the photo, so they are sRGB, not linear.
         var waterMat = new StandardMaterial3D
         {
