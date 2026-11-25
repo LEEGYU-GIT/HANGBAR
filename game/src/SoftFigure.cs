@@ -29,6 +29,8 @@ public partial class SoftFigure : Node3D
     CharacterBody3D? _owner;
     float _lean, _leanVel, _roll, _rollVel, _headLag, _headLagVel, _armSwing, _armSwingVel, _flail, _flailVel;
     float _squash, _squashVel, _phase, _time, _lastYaw;
+    Node3D _pupilL = null!, _pupilR = null!, _lidL = null!, _lidR = null!;
+    float _jig, _jigVel, _jigY, _jigYVel, _nextBlink = 2.2f;
     Vector3 _lastVel;
     bool _wasOnFloor = true;
 
@@ -68,12 +70,15 @@ public partial class SoftFigure : Node3D
         // face and hat ride on their own lagging pivot near the top of the bean
         _head = new Node3D { Position = new Vector3(0, 0.78f, 0) };
         _body.AddChild(_head);
-        foreach (float side in new[] { -1f, 1f })
+        // a dopey face: googly eyes of two sizes looking different ways, sleepy lids, a lopsided open mouth, one buck tooth
+        (_pupilL, _lidL) = Eye(new Vector3(-0.125f, 0.035f, -0.3f), 0.1f);
+        (_pupilR, _lidR) = Eye(new Vector3(0.13f, 0.0f, -0.315f), 0.078f);
+        _head.AddChild(Ball(0.05f, Ink, new Vector3(0.05f, -0.135f, -0.345f), new Vector3(1.25f, 0.75f, 0.35f)));
+        _head.AddChild(new MeshInstance3D
         {
-            _head.AddChild(Ball(0.075f, Ink, new Vector3(side * 0.13f, 0.02f, -0.33f), new Vector3(0.85f, 1.35f, 0.5f)));
-            _head.AddChild(Ball(0.026f, Colors.White, new Vector3(side * 0.13f + 0.02f, 0.06f, -0.37f)));
-        }
-        _head.AddChild(Capsule(0.018f, 0.12f, Ink, new Vector3(0, -0.12f, -0.355f), new Vector3(0, 0, Mathf.Pi / 2)));
+            Mesh = new BoxMesh { Size = new Vector3(0.034f, 0.036f, 0.012f) }, MaterialOverride = Mat(Colors.White),
+            Position = new Vector3(0.04f, -0.112f, -0.362f),
+        });
         // beanie: a cap, a folded rim and a pompom
         var cap = Ball(0.375f, HatColor, new Vector3(0, 0.1f, 0), new Vector3(1, 0.75f, 1));
         cap.Mesh = new SphereMesh { Radius = 0.375f, Height = 0.375f, IsHemisphere = true, RadialSegments = 24, Rings = 8 };
@@ -88,6 +93,21 @@ public partial class SoftFigure : Node3D
         // noodle arms with mitts
         _armL = Arm(_body, -1);
         _armR = Arm(_body, 1);
+    }
+
+    /// <summary>A white eyeball with a small pupil on a pivot (to roll it) and a lid on a pivot (to blink).</summary>
+    (Node3D Pupil, Node3D Lid) Eye(Vector3 at, float r)
+    {
+        _head.AddChild(Ball(r, Colors.White, at));
+        var pupil = new Node3D { Position = at };
+        _head.AddChild(pupil);
+        pupil.AddChild(Ball(r * 0.36f, Ink, new Vector3(0, 0, -r * 0.88f), new Vector3(1, 1, 0.4f)));
+        var lid = new Node3D { Position = at };
+        _head.AddChild(lid);
+        var lidMesh = Ball(r * 1.1f, Tint.Darkened(0.08f), Vector3.Zero);
+        lidMesh.Mesh = new SphereMesh { Radius = r * 1.1f, Height = r * 1.1f, IsHemisphere = true, RadialSegments = 20, Rings = 6 };
+        lid.AddChild(lidMesh);
+        return (pupil, lid);
     }
 
     Node3D Leg(Node3D parent, float x)
@@ -139,6 +159,22 @@ public partial class SoftFigure : Node3D
         // head lags behind the body
         Spring(ref _headLag, ref _headLagVel, -_leanVel * 0.06f, 90f, 6f, dt);
         _head.Rotation = new Vector3(_headLag + Mathf.Sin(_time * 1.7f) * 0.03f, 0, -_rollVel * 0.02f);
+
+        // googly pupils slosh behind every move; the left looks down and out, the right drifts in and down
+        Spring(ref _jig, ref _jigVel, Mathf.Clamp(-_rollVel * 0.3f + Mathf.Sin(_time * 0.6f) * 0.12f, -0.6f, 0.6f), 22f, 2.2f, dt);
+        Spring(ref _jigY, ref _jigYVel, Mathf.Clamp(_leanVel * 0.35f + (onFloor ? 0 : 0.45f), -0.6f, 0.6f), 22f, 2.2f, dt);
+        _pupilL.Rotation = new Vector3(-0.38f + _jigY * 0.5f, 0.45f + _jig, 0);
+        _pupilR.Rotation = new Vector3(-0.28f + _jigY * 0.7f, 0.22f + _jig * 1.3f, 0);
+        // sleepy lids, the left lower than the right; a slow blink now and then
+        float blink = 0;
+        if (_time > _nextBlink)
+        {
+            float t = (_time - _nextBlink) / 0.22f;
+            blink = t < 1 ? Mathf.Sin(t * Mathf.Pi) : 0;
+            if (t >= 1) _nextBlink = _time + 2.5f + 2.5f * (Mathf.Sin(_time * 12.9898f) * 0.5f + 0.5f);
+        }
+        _lidL.Rotation = new Vector3(-0.42f - blink * 1.2f, 0, 0.12f);
+        _lidR.Rotation = new Vector3(-0.3f - blink * 1.3f, 0, -0.1f);
 
         // legs swing with distance; tucked in the air
         float stride = Mathf.Sin(_phase) * 0.7f * Mathf.Min(walk, 1.2f);
