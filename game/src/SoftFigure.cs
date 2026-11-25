@@ -2,6 +2,9 @@ using Godot;
 
 namespace Inpc.Game;
 
+/// <summary>The figure's faces.</summary>
+public enum FigureFace { Normal, Dazed }
+
 /// <summary>Which look the game uses. SPIKE: --style=soft switches to the soft test look.</summary>
 public static class Style
 {
@@ -29,7 +32,10 @@ public partial class SoftFigure : Node3D
     CharacterBody3D? _owner;
     float _lean, _leanVel, _roll, _rollVel, _headLag, _headLagVel, _armSwing, _armSwingVel, _flail, _flailVel;
     float _squash, _squashVel, _phase, _time, _lastYaw;
-    Node3D _pupilL = null!, _pupilR = null!, _lidL = null!, _lidR = null!;
+    Node3D _pupilL = null!, _pupilR = null!, _lidL = null!, _lidR = null!, _faceNormal = null!, _faceDazed = null!;
+
+    /// <summary>Which face shows. Dazed is for later: hit hard, low health, a bad status (user idea 2026-11-25).</summary>
+    public FigureFace Face { get; set; } = FigureFace.Normal;
     float _jig, _jigVel, _jigY, _jigYVel, _nextBlink = 2.2f;
     Vector3 _lastVel;
     bool _wasOnFloor = true;
@@ -70,11 +76,24 @@ public partial class SoftFigure : Node3D
         // face and hat ride on their own lagging pivot near the top of the bean
         _head = new Node3D { Position = new Vector3(0, 0.78f, 0) };
         _body.AddChild(_head);
-        // a dopey face: googly eyes of two sizes looking different ways, sleepy lids, a lopsided open mouth, one buck tooth
+        // the everyday face: dark oval eyes with a highlight, a small flat mouth
+        _faceNormal = new Node3D();
+        _head.AddChild(_faceNormal);
+        foreach (float side in new[] { -1f, 1f })
+        {
+            _faceNormal.AddChild(Ball(0.075f, Ink, new Vector3(side * 0.13f, 0.02f, -0.33f), new Vector3(0.85f, 1.35f, 0.5f)));
+            _faceNormal.AddChild(Ball(0.026f, Colors.White, new Vector3(side * 0.13f + 0.02f, 0.06f, -0.37f)));
+        }
+        _faceNormal.AddChild(Capsule(0.018f, 0.12f, Ink, new Vector3(0, -0.12f, -0.355f), new Vector3(0, 0, Mathf.Pi / 2)));
+
+        // the dazed face (hit hard, low health, a bad status): googly eyes of two sizes looking different ways,
+        // sleepy lids, a lopsided open mouth, one buck tooth
+        _faceDazed = new Node3D();
+        _head.AddChild(_faceDazed);
         (_pupilL, _lidL) = Eye(new Vector3(-0.125f, 0.035f, -0.3f), 0.1f);
         (_pupilR, _lidR) = Eye(new Vector3(0.13f, 0.0f, -0.315f), 0.078f);
-        _head.AddChild(Ball(0.05f, Ink, new Vector3(0.05f, -0.135f, -0.345f), new Vector3(1.25f, 0.75f, 0.35f)));
-        _head.AddChild(new MeshInstance3D
+        _faceDazed.AddChild(Ball(0.05f, Ink, new Vector3(0.05f, -0.135f, -0.345f), new Vector3(1.25f, 0.75f, 0.35f)));
+        _faceDazed.AddChild(new MeshInstance3D
         {
             Mesh = new BoxMesh { Size = new Vector3(0.034f, 0.036f, 0.012f) }, MaterialOverride = Mat(Colors.White),
             Position = new Vector3(0.04f, -0.112f, -0.362f),
@@ -98,12 +117,12 @@ public partial class SoftFigure : Node3D
     /// <summary>A white eyeball with a small pupil on a pivot (to roll it) and a lid on a pivot (to blink).</summary>
     (Node3D Pupil, Node3D Lid) Eye(Vector3 at, float r)
     {
-        _head.AddChild(Ball(r, Colors.White, at));
+        _faceDazed.AddChild(Ball(r, Colors.White, at));
         var pupil = new Node3D { Position = at };
-        _head.AddChild(pupil);
+        _faceDazed.AddChild(pupil);
         pupil.AddChild(Ball(r * 0.36f, Ink, new Vector3(0, 0, -r * 0.88f), new Vector3(1, 1, 0.4f)));
         var lid = new Node3D { Position = at };
-        _head.AddChild(lid);
+        _faceDazed.AddChild(lid);
         var lidMesh = Ball(r * 1.1f, Tint.Darkened(0.08f), Vector3.Zero);
         lidMesh.Mesh = new SphereMesh { Radius = r * 1.1f, Height = r * 1.1f, IsHemisphere = true, RadialSegments = 20, Rings = 6 };
         lid.AddChild(lidMesh);
@@ -160,6 +179,8 @@ public partial class SoftFigure : Node3D
         Spring(ref _headLag, ref _headLagVel, -_leanVel * 0.06f, 90f, 6f, dt);
         _head.Rotation = new Vector3(_headLag + Mathf.Sin(_time * 1.7f) * 0.03f, 0, -_rollVel * 0.02f);
 
+        _faceNormal.Visible = Face == FigureFace.Normal;
+        _faceDazed.Visible = Face == FigureFace.Dazed;
         // googly pupils slosh behind every move; the left looks down and out, the right drifts in and down
         Spring(ref _jig, ref _jigVel, Mathf.Clamp(-_rollVel * 0.3f + Mathf.Sin(_time * 0.6f) * 0.12f, -0.6f, 0.6f), 22f, 2.2f, dt);
         Spring(ref _jigY, ref _jigYVel, Mathf.Clamp(_leanVel * 0.35f + (onFloor ? 0 : 0.45f), -0.6f, 0.6f), 22f, 2.2f, dt);

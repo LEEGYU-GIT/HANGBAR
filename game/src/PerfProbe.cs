@@ -110,6 +110,10 @@ public partial class PerfProbe : CanvasLayer
         cam.MakeCurrent();
         cam.LookAtFromPosition(start + fwd * 2.6f + Vector3.Up * 1.4f, start + Vector3.Up * 1.1f, Vector3.Up);
         await shot("face.png");
+        var me = p.GetNode<SoftFigure>("Figure3D");
+        me.Face = FigureFace.Dazed;
+        await shot("face-dazed.png");
+        me.Face = FigureFace.Normal;
 
         // four players side by side, told apart by colour and hat
         var figureRot = p.GetNode<Node3D>("Figure3D").GlobalRotation;
@@ -121,7 +125,7 @@ public partial class PerfProbe : CanvasLayer
             (1.2f, new Color(1f, 0.82f, 0.25f), new Color(0.3f, 0.7f, 0.35f)),
         })
         {
-            var f = new SoftFigure { Tint = body, HatColor = hat };
+            var f = new SoftFigure { Tint = body, HatColor = hat, Face = k == -1.2f ? FigureFace.Dazed : FigureFace.Normal };
             _world.AddChild(f);
             f.GlobalPosition = start + side * k;
             f.GlobalRotation = figureRot;
