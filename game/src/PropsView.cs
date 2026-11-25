@@ -107,7 +107,45 @@ public static class PropsView
                 parent.AddChild(new MultiMeshInstance3D { Multimesh = mm, MaterialOverride = MaterialFor(piece), CastShadow = GeometryInstance3D.ShadowCastingSetting.On, Name = $"Props{group.Key}" });
             }
         }
+        AddColliders(parent, world, props);
         return count;
+    }
+
+    /// <summary>
+    /// Solid parts of the big props so they block the way (user decision 2026-11-25): tree trunks, rocks, bushes,
+    /// parasol poles and benches. Crowns and small things on tables have none, so one can walk under a tree.
+    /// One static body holds every shape.
+    /// </summary>
+    static void AddColliders(Node3D parent, VoxelWorld world, IReadOnlyList<Prop> props)
+    {
+        float bs = ChunkMesher.BlockSize;
+        var body = new StaticBody3D { Name = "PropColliders" };
+        void Add(Shape3D shape, Transform3D at) => body.AddChild(new CollisionShape3D { Shape = shape, Transform = at });
+        foreach (var p in props)
+        {
+            int y = p.Y >= 0 ? p.Y : TopFree(world, p.X, p.Z);
+            var feet = new Vector3((p.X + 0.5f) * bs, y * bs, (p.Z + 0.5f) * bs);
+            float s = p.Scale, yaw = (p.X * 7 + p.Z * 13) % 360 * Mathf.Pi / 180;
+            switch (p.Kind)
+            {
+                case PropKind.Tree:
+                    Add(new CylinderShape3D { Radius = 0.16f * s, Height = 1.6f * s }, new Transform3D(Basis.Identity, feet + new Vector3(0, 0.8f * s, 0)));
+                    break;
+                case PropKind.Rock:
+                    Add(new CylinderShape3D { Radius = 0.4f * s, Height = 0.55f * s }, new Transform3D(Basis.Identity, feet + new Vector3(0, 0.25f * s, 0)));
+                    break;
+                case PropKind.Bush:
+                    Add(new SphereShape3D { Radius = 0.42f * s }, new Transform3D(Basis.Identity, feet + new Vector3(0, 0.3f * s, 0)));
+                    break;
+                case PropKind.Parasol:
+                    Add(new CylinderShape3D { Radius = 0.05f, Height = 2.1f * s }, new Transform3D(Basis.Identity, feet + new Vector3(0, 1.05f * s, 0)));
+                    break;
+                case PropKind.Bench:
+                    Add(new BoxShape3D { Size = new Vector3(1.4f, 0.5f, 0.42f) * s }, new Transform3D(Basis.FromEuler(new Vector3(0, yaw, 0)), feet + new Vector3(0, 0.25f * s, 0)));
+                    break;
+            }
+        }
+        parent.AddChild(body);
     }
 
     static int TopFree(VoxelWorld w, int x, int z)

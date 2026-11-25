@@ -4,11 +4,13 @@ namespace Inpc.Game;
 
 /// <summary>
 /// Third-person walker (design §6-5). Origin at the feet. WASD move, Shift run, Space jump, mouse look
-/// (click to capture, Esc to release). Steps up ledges of up to two blocks so 0.25 m terrain never snags.
+/// (click to capture, Esc to release). Walks up one-block (0.25 m) ledges like stairs; anything higher needs a jump
+/// (user decision 2026-11-25). Speeds ease in and out so the character does not slide.
 /// </summary>
 public partial class Player : CharacterBody3D
 {
-    const float Walk = 4.5f, Run = 7f, JumpSpeed = 5.5f, StepHeight = 0.55f;
+    const float Walk = 3f, Run = 5f, JumpSpeed = 4.6f, StepHeight = 0.3f;   // jump ≈ 1 m; step = one block, not two
+    const float Accel = 18f, Decel = 24f, AirAccel = 6f;                      // m/s² toward the wanted speed
     const float Radius = 0.3f, Tall = 1.75f;
 
     public bool InputEnabled { get; set; } = true;
@@ -93,15 +95,23 @@ public partial class Player : CharacterBody3D
             if (Input.IsKeyPressed(Key.Space) && IsOnFloor()) v.Y = JumpSpeed;
         }
         if (wish.LengthSquared() > 1e-4f) wish = wish.Normalized() * (run ? Run : Walk);
-        v.X = wish.X;
-        v.Z = wish.Z;
+        // ease toward the wanted speed: quick on the ground, slow in the air, a little faster to stop than to start
+        var flat = new Vector3(v.X, 0, v.Z);
+        float rate = !IsOnFloor() ? AirAccel : wish.LengthSquared() >= flat.LengthSquared() ? Accel : Decel;
+        flat = flat.MoveToward(wish, rate * dt);
+        v.X = flat.X;
+        v.Z = flat.Z;
         Velocity = v;
 
-        if (IsOnFloor() && wish.LengthSquared() > 1e-4f) StepUp(wish * dt);
+        if (IsOnFloor() && flat.LengthSquared() > 1e-4f) StepUp(flat * dt);
         MoveAndSlide();
 
         if (wish.LengthSquared() > 1e-4f)
-            _figure.Rotation = new Vector3(0, Mathf.Atan2(-wish.X, -wish.Z) - Rotation.Y, 0);
+        {
+            // turn toward where it is going, quickly but not in one frame
+            float target = Mathf.Atan2(-wish.X, -wish.Z) - Rotation.Y;
+            _figure.Rotation = new Vector3(0, Mathf.LerpAngle(_figure.Rotation.Y, target, 1 - Mathf.Exp(-12f * dt)), 0);
+        }
     }
 
     /// <summary>

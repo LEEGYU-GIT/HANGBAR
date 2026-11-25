@@ -155,7 +155,7 @@ public partial class Figure : Node3D
         var v = _owner?.Velocity ?? Vector3.Zero;
         bool onFloor = _owner?.IsOnFloor() ?? true;
         var flat = new Vector3(v.X, 0, v.Z);
-        float speed = flat.Length(), walk = Mathf.Clamp(speed / 4.5f, 0, 1.6f);
+        float speed = flat.Length(), walk = Mathf.Clamp(speed / 3f, 0, 1.6f);
         var accel = (flat - new Vector3(_lastVel.X, 0, _lastVel.Z)) / Mathf.Max(dt, 1e-3f);
         var forward = -GlobalTransform.Basis.Z;
         float push = accel.Dot(forward) * 0.012f;
@@ -164,7 +164,7 @@ public partial class Figure : Node3D
         // body: leans into the walk and the push, rolls into turns; soft springs so it wobbles
         Spring(ref _lean, ref _leanVel, -(0.18f * walk + Mathf.Clamp(push, -0.3f, 0.3f)), 70f, 7f, dt);
         Spring(ref _roll, ref _rollVel, Mathf.Clamp(-turn * 0.04f * walk, -0.35f, 0.35f), 60f, 6f, dt);
-        _phase += speed * dt * 2.4f;
+        _phase += speed * dt * Mathf.Pi / 0.5f; // one step per 0.5 m: short legs take quick little steps
         float bob = Mathf.Abs(Mathf.Sin(_phase)) * 0.06f * Mathf.Min(walk, 1f);
         _hips.Position = new Vector3(0, HipY + bob, 0);
         _body.Rotation = new Vector3(_lean, 0, _roll + Mathf.Sin(_phase) * 0.06f * Mathf.Min(walk, 1f));
