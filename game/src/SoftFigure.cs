@@ -11,12 +11,19 @@ public static class Style
 /// <summary>
 /// SPIKE (style test): a soft, big-headed figure that wobbles. Nothing is animated by hand-made clips: the body
 /// leans on a spring toward where it is going and overshoots, the head and arms lag behind on their own springs,
-/// legs swing with the distance walked, arms flail up in the air, the body squashes on landing. Faces −Z, 1.75 m.
+/// legs swing with the distance walked, arms flail up in the air, the body squashes on landing. Faces −Z, about 1.6 m.
+/// Look: one bean for head and body in the player's colour, simple eyes, a beanie, a backpack, noodle arms with mitts,
+/// short legs with big boots (the common shape of co-op indie games, no particular game's character).
 /// </summary>
 public partial class SoftFigure : Node3D
 {
-    static readonly Color Body = new(0.32f, 0.6f, 1f), Skin = new(1f, 0.8f, 0.66f), Ink = new(0.12f, 0.1f, 0.12f),
-        Cheek = new(1f, 0.5f, 0.55f), Shoe = new(0.98f, 0.8f, 0.3f);
+    const float HipY = 0.34f;
+    static readonly Color Ink = new(0.1f, 0.09f, 0.12f), Mitt = new(0.97f, 0.95f, 0.9f), Boot = new(0.27f, 0.22f, 0.24f),
+        Pack = new(0.55f, 0.4f, 0.28f);
+
+    /// <summary>The player's colour (body and arms). Co-op players differ by colour and hat.</summary>
+    public Color Tint { get; set; } = new(0.98f, 0.5f, 0.28f);
+    public Color HatColor { get; set; } = new(0.2f, 0.45f, 0.85f);
 
     Node3D _hips = null!, _body = null!, _head = null!, _armL = null!, _armR = null!, _legL = null!, _legR = null!;
     CharacterBody3D? _owner;
@@ -25,7 +32,7 @@ public partial class SoftFigure : Node3D
     Vector3 _lastVel;
     bool _wasOnFloor = true;
 
-    static StandardMaterial3D Mat(Color c, float rough = 0.85f) => new() { AlbedoColor = c, Roughness = rough };
+    static StandardMaterial3D Mat(Color c, float rough = 0.8f) => new() { AlbedoColor = c, Roughness = rough };
 
     static MeshInstance3D Ball(float r, Color c, Vector3 pos, Vector3? scale = null) => new()
     {
@@ -33,44 +40,71 @@ public partial class SoftFigure : Node3D
         Position = pos, Scale = scale ?? Vector3.One,
     };
 
-    static MeshInstance3D Capsule(float r, float h, Color c, Vector3 pos) => new()
+    static MeshInstance3D Capsule(float r, float h, Color c, Vector3 pos, Vector3? rot = null) => new()
     {
         Mesh = new CapsuleMesh { Radius = r, Height = h, RadialSegments = 20, Rings = 6 }, MaterialOverride = Mat(c), Position = pos,
+        Rotation = rot ?? Vector3.Zero,
     };
 
     public override void _Ready()
     {
         _owner = GetParent() as CharacterBody3D;
-        _hips = new Node3D { Position = new Vector3(0, 0.48f, 0) };
+        _hips = new Node3D { Position = new Vector3(0, HipY, 0) };
         AddChild(_hips);
 
-        // legs hang from the hips and swing
-        _legL = Limb(_hips, new Vector3(-0.14f, 0, 0), 0.11f, 0.5f, Shoe);
-        _legR = Limb(_hips, new Vector3(0.14f, 0, 0), 0.11f, 0.5f, Shoe);
+        // short legs with big boots
+        _legL = Leg(_hips, -0.15f);
+        _legR = Leg(_hips, 0.15f);
 
-        // the body leans from the hips; the head sits on it with its own lag
+        // one bean for head and body, leaning from the hips
         _body = new Node3D();
         _hips.AddChild(_body);
-        _body.AddChild(Ball(0.34f, Body, new Vector3(0, 0.3f, 0), new Vector3(1f, 1.15f, 0.9f)));
-        _head = new Node3D { Position = new Vector3(0, 0.62f, 0) };
+        _body.AddChild(Capsule(0.36f, 1.12f, Tint, new Vector3(0, 0.5f, 0)));
+        // a backpack that bounces with the body
+        var pack = Capsule(0.2f, 0.5f, Pack, new Vector3(0, 0.45f, 0.36f), new Vector3(0, 0, Mathf.Pi / 2));
+        pack.Scale = new Vector3(1, 1.25f, 0.8f);
+        _body.AddChild(pack);
+
+        // face and hat ride on their own lagging pivot near the top of the bean
+        _head = new Node3D { Position = new Vector3(0, 0.78f, 0) };
         _body.AddChild(_head);
-        _head.AddChild(Ball(0.4f, Skin, new Vector3(0, 0.32f, 0)));
         foreach (float side in new[] { -1f, 1f })
         {
-            _head.AddChild(Ball(0.085f, Colors.White, new Vector3(side * 0.14f, 0.38f, -0.34f), new Vector3(1, 1.2f, 0.6f)));
-            _head.AddChild(Ball(0.05f, Ink, new Vector3(side * 0.14f, 0.37f, -0.39f), new Vector3(1, 1.2f, 0.6f)));
-            _head.AddChild(Ball(0.07f, Cheek, new Vector3(side * 0.24f, 0.24f, -0.3f), new Vector3(1, 0.6f, 0.4f)));
+            _head.AddChild(Ball(0.075f, Ink, new Vector3(side * 0.13f, 0.02f, -0.33f), new Vector3(0.85f, 1.35f, 0.5f)));
+            _head.AddChild(Ball(0.026f, Colors.White, new Vector3(side * 0.13f + 0.02f, 0.06f, -0.37f)));
         }
-        _armL = Limb(_body, new Vector3(-0.36f, 0.42f, 0), 0.09f, 0.48f, Body);
-        _armR = Limb(_body, new Vector3(0.36f, 0.42f, 0), 0.09f, 0.48f, Body);
+        _head.AddChild(Capsule(0.018f, 0.12f, Ink, new Vector3(0, -0.12f, -0.355f), new Vector3(0, 0, Mathf.Pi / 2)));
+        // beanie: a cap, a folded rim and a pompom
+        var cap = Ball(0.375f, HatColor, new Vector3(0, 0.1f, 0), new Vector3(1, 0.75f, 1));
+        cap.Mesh = new SphereMesh { Radius = 0.375f, Height = 0.375f, IsHemisphere = true, RadialSegments = 24, Rings = 8 };
+        _head.AddChild(cap);
+        _head.AddChild(new MeshInstance3D
+        {
+            Mesh = new TorusMesh { InnerRadius = 0.33f, OuterRadius = 0.41f, Rings = 24, RingSegments = 10 },
+            MaterialOverride = Mat(HatColor.Darkened(0.15f)), Position = new Vector3(0, 0.12f, 0),
+        });
+        _head.AddChild(Ball(0.09f, Mitt, new Vector3(0, 0.42f, 0)));
+
+        // noodle arms with mitts
+        _armL = Arm(_body, -1);
+        _armR = Arm(_body, 1);
     }
 
-    /// <summary>A pivot with a capsule hanging down from it.</summary>
-    static Node3D Limb(Node3D parent, Vector3 at, float r, float length, Color c)
+    Node3D Leg(Node3D parent, float x)
     {
-        var pivot = new Node3D { Position = at };
+        var pivot = new Node3D { Position = new Vector3(x, 0, 0) };
         parent.AddChild(pivot);
-        pivot.AddChild(Capsule(r, length, c, new Vector3(0, -length / 2 + r * 0.5f, 0)));
+        pivot.AddChild(Capsule(0.09f, 0.3f, Tint.Darkened(0.35f), new Vector3(0, -0.12f, 0)));
+        pivot.AddChild(Ball(0.13f, Boot, new Vector3(0, -0.27f, -0.05f), new Vector3(1, 0.65f, 1.35f)));
+        return pivot;
+    }
+
+    Node3D Arm(Node3D parent, float side)
+    {
+        var pivot = new Node3D { Position = new Vector3(side * 0.36f, 0.42f, 0) };
+        parent.AddChild(pivot);
+        pivot.AddChild(Capsule(0.055f, 0.48f, Tint, new Vector3(0, -0.22f, 0)));
+        pivot.AddChild(Ball(0.1f, Mitt, new Vector3(0, -0.47f, 0)));
         return pivot;
     }
 
@@ -99,7 +133,7 @@ public partial class SoftFigure : Node3D
         Spring(ref _roll, ref _rollVel, Mathf.Clamp(-turn * 0.04f * walk, -0.35f, 0.35f), 60f, 6f, dt);
         _phase += speed * dt * 2.4f;
         float bob = Mathf.Abs(Mathf.Sin(_phase)) * 0.06f * Mathf.Min(walk, 1f);
-        _hips.Position = new Vector3(0, 0.48f + bob, 0);
+        _hips.Position = new Vector3(0, HipY + bob, 0);
         _body.Rotation = new Vector3(_lean, 0, _roll + Mathf.Sin(_phase) * 0.06f * Mathf.Min(walk, 1f));
 
         // head lags behind the body

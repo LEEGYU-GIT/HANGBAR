@@ -111,6 +111,26 @@ public partial class PerfProbe : CanvasLayer
         cam.LookAtFromPosition(start + fwd * 2.6f + Vector3.Up * 1.4f, start + Vector3.Up * 1.1f, Vector3.Up);
         await shot("face.png");
 
+        // four players side by side, told apart by colour and hat
+        var figureRot = p.GetNode<Node3D>("Figure3D").GlobalRotation;
+        var team = new List<SoftFigure>();
+        foreach (var (k, body, hat) in new[]
+        {
+            (-2.4f, new Color(0.18f, 0.72f, 0.66f), new Color(1f, 0.8f, 0.2f)),
+            (-1.2f, new Color(0.6f, 0.42f, 0.95f), new Color(1f, 0.55f, 0.7f)),
+            (1.2f, new Color(1f, 0.82f, 0.25f), new Color(0.3f, 0.7f, 0.35f)),
+        })
+        {
+            var f = new SoftFigure { Tint = body, HatColor = hat };
+            _world.AddChild(f);
+            f.GlobalPosition = start + side * k;
+            f.GlobalRotation = figureRot;
+            team.Add(f);
+        }
+        cam.LookAtFromPosition(start - side * 0.6f + fwd * 5.2f + Vector3.Up * 1.6f, start - side * 0.6f + Vector3.Up * 0.8f, Vector3.Up);
+        await shot("team.png");
+        foreach (var f in team) f.QueueFree();
+
         p.AutoWalk = fwd;
         for (int i = 1; i <= 3; i++)
         {

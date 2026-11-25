@@ -48,7 +48,7 @@ void fragment() {
 		else col *= vec3(0.88, 0.9, 0.97);
 		// richer colour than the photo's washed palette
 		float l = dot(col, vec3(0.299, 0.587, 0.114));
-		col = mix(vec3(l), col, 1.25);
+		col = mix(vec3(l), col, 1.35);
 	}
 	ALBEDO = to_linear(clamp(col, 0.0, 1.0));
 	ROUGHNESS = m == METAL ? 0.4 : (m == SNOW || m == SAND ? 0.95 : 0.85);

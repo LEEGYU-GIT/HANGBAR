@@ -24,7 +24,7 @@ void fragment() {
 	// flat normals from screen-space derivatives give the low-poly facets
 	vec3 fn = normalize(cross(dFdx(VERTEX), dFdy(VERTEX)));
 	NORMAL = fn;
-	vec3 col = mix(COLOR.rgb, vec3(1.0), 0.05);
+	vec3 col = COLOR.rgb;
 	ALBEDO = to_linear(col);
 	ROUGHNESS = 0.9;
 }

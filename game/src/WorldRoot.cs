@@ -199,20 +199,20 @@ public partial class WorldRoot : Node3D
         if (Style.Soft)
         {
             // SPIKE: warm, saturated sky; distance fades into a soft haze; warmer sun, softer shadows
-            var haze = new Color(0.86f, 0.9f, 0.95f);
-            sky.SkyTopColor = new Color(0.32f, 0.58f, 0.95f);
+            var haze = new Color(0.78f, 0.86f, 0.96f);
+            sky.SkyTopColor = new Color(0.22f, 0.52f, 0.95f);
             sky.SkyHorizonColor = haze;
             sky.GroundHorizonColor = haze;
             sky.GroundBottomColor = haze;
-            env.AmbientLightEnergy = 1.05f;
+            env.AmbientLightEnergy = 0.9f;
             env.TonemapExposure = 1.0f;
             env.FogEnabled = true;
             env.FogLightColor = haze;
-            env.FogDensity = 0.012f;
-            env.FogAerialPerspective = 0.7f;
+            env.FogDensity = 0.005f;
+            env.FogAerialPerspective = 0.35f;
             env.FogSkyAffect = 0.0f;
             env.AdjustmentEnabled = true;
-            env.AdjustmentSaturation = 1.15f;
+            env.AdjustmentSaturation = 1.3f;
             sun.LightColor = new Color(1f, 0.94f, 0.84f);
             sun.LightEnergy = 1.25f;
             sun.ShadowBlur = 2.5f;
