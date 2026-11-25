@@ -31,7 +31,7 @@ public partial class Player : CharacterBody3D
             Shape = new CylinderShape3D { Radius = Radius, Height = Tall },
             Position = new Vector3(0, Tall / 2, 0),
         });
-        _figure = Style.Soft ? new SoftFigure() : new Figure();
+        _figure = new Figure();
         _figure.Name = "Figure3D";
         AddChild(_figure);
 

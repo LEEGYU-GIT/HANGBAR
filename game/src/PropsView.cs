@@ -13,18 +13,17 @@ public static class PropsView
     /// <summary>One piece of a prop's look: a mesh, its offset above the prop's feet and its scale, in metres for scale 1.</summary>
     sealed record Piece(Mesh Mesh, Vector3 Offset, Vector3 Scale, Color? Tint = null, Vector3 Turn = default, float Shade = 1f, float Sway = 0f);
 
-    /// <summary>SPIKE (style test): chunkier, faceted round shapes; trees are clusters of blobs that sway.</summary>
+    /// <summary>Soft style: chunkier, faceted round shapes; trees are clusters of blobs that sway.</summary>
     static void SoftLooks(Dictionary<PropKind, Piece[]> looks)
     {
-        static SphereMesh Blob(float r) => new() { Radius = r, Height = r * 2, RadialSegments = 9, Rings = 5 };
+        static SphereMesh Blob(float r) => new() { Radius = r, Height = r * 2, RadialSegments = 8, Rings = 4 };
         var bark = new Color(0.5f, 0.34f, 0.24f);
         looks[PropKind.Tree] = new[]
         {
             new Piece(new CylinderMesh { RadialSegments = 7, Rings = 1, TopRadius = 0.09f, BottomRadius = 0.17f, Height = 1.6f }, new Vector3(0, 0.8f, 0), Vector3.One, bark),
-            new Piece(Blob(0.85f), new Vector3(0, 2.15f, 0), new Vector3(1, 0.9f, 1), Sway: 0.07f),
+            new Piece(Blob(0.9f), new Vector3(0, 2.25f, 0), new Vector3(1, 0.95f, 1), Sway: 0.07f),
             new Piece(Blob(0.6f), new Vector3(0.55f, 1.85f, 0.15f), Vector3.One, Shade: 0.88f, Sway: 0.07f),
             new Piece(Blob(0.62f), new Vector3(-0.5f, 1.9f, -0.25f), Vector3.One, Shade: 1.1f, Sway: 0.07f),
-            new Piece(Blob(0.5f), new Vector3(0.1f, 2.75f, -0.1f), Vector3.One, Shade: 1.15f, Sway: 0.07f),
         };
         looks[PropKind.Bush] = new[]
         {
@@ -69,13 +68,11 @@ public static class PropsView
             },
             [PropKind.Float] = new[] { new Piece(new SphereMesh { RadialSegments = 12, Rings = 6, Radius = 0.12f, Height = 0.24f }, new Vector3(0, 0.02f, 0), Vector3.One) },
         };
-        var mat = new StandardMaterial3D { VertexColorUseAsAlbedo = true, VertexColorIsSrgb = true, Roughness = 0.8f };
-        var softShader = Style.Soft ? GD.Load<Shader>("res://shaders/soft_prop.gdshader") : null;
-        if (Style.Soft) SoftLooks(looks);
+        var shader = GD.Load<Shader>("res://shaders/prop.gdshader");
+        SoftLooks(looks);
         Godot.Material MaterialFor(Piece piece)
         {
-            if (softShader is null) return mat;
-            var m = new ShaderMaterial { Shader = softShader };
+            var m = new ShaderMaterial { Shader = shader };
             m.SetShaderParameter("sway", piece.Sway);
             return m;
         }

@@ -4,9 +4,10 @@ namespace Hangbar.Core.World;
 public readonly record struct Texel(float Shade, float Moss);
 
 /// <summary>
-/// The reference texture function (v2 design): an 8×8 pattern per block face, shaded around the block's own colour.
-/// The preview tool uses it directly and game/shaders/block.gdshader ports it line by line, so it only uses
-/// integer and float arithmetic (no LINQ, collections or Random).
+/// The pixel texture function of the v2 design: an 8×8 pattern per block face, shaded around the block's own colour.
+/// The preview tool's close-up picture uses it. The game no longer does: since the soft style (user decision
+/// 2026-11-25) game/shaders/block.gdshader draws blocks without a pattern and shows wear more gently, keeping
+/// <see cref="MossColor"/>. Integer and float arithmetic only, so it can be ported to a shader again if needed.
 /// Motif: compression blotches — stone-like materials are made of 2×2 blocks, the "pixels" of a JPEG gone wrong.
 /// Photo mural blocks (Pixel) stay flat.
 /// </summary>

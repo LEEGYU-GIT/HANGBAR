@@ -23,7 +23,6 @@ public partial class WorldRoot : Node3D
     {
         foreach (var a in OS.GetCmdlineUserArgs())
             if (a.StartsWith("--") && a.Contains('=')) Args[a[2..a.IndexOf('=')]] = a[(a.IndexOf('=') + 1)..];
-        Style.Soft = Args.GetValueOrDefault("style") == "soft"; // SPIKE: style test
 
         var sw = Stopwatch.StartNew();
         PixelImage? photo = null;
@@ -196,9 +195,8 @@ public partial class WorldRoot : Node3D
             ShadowEnabled = medium,
             DirectionalShadowMaxDistance = 60,
         };
-        if (Style.Soft)
         {
-            // SPIKE: warm, saturated sky; distance fades into a soft haze; warmer sun, softer shadows
+            // soft style: warm, saturated sky; distance fades into a light haze; warmer sun, softer shadows
             var haze = new Color(0.78f, 0.86f, 0.96f);
             sky.SkyTopColor = new Color(0.22f, 0.52f, 0.95f);
             sky.SkyHorizonColor = haze;

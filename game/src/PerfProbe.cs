@@ -48,7 +48,8 @@ public partial class PerfProbe : CanvasLayer
 
     /// <summary>
     /// --shots=DIR: saves overview.png (30 m up, oblique), ground.png (behind the character at eye height),
-    /// top.png (straight down, orthographic, to lay next to the photo) and photo.png (the prepared 192×192 photo), then quits.
+    /// the character shots (face.png, face-dazed.png, team.png, walk1–3.png, jump1–3.png), top.png (straight down,
+    /// orthographic, to lay next to the photo) and photo.png (the prepared 192×192 photo), then quits.
     /// File names never include the photo's name.
     /// </summary>
     public async void TakeShots(string dir, Hangbar.Core.World.PixelImage prepared)
@@ -74,7 +75,7 @@ public partial class PerfProbe : CanvasLayer
         await Shot("overview.png");
         _world.Player.Camera.MakeCurrent();
         await Shot("ground.png");
-        if (Style.Soft) await MotionShots(cam, Shot);
+        await MotionShots(cam, Shot);
         cam.MakeCurrent();
         cam.Projection = Camera3D.ProjectionType.Orthogonal;
         cam.Size = size;
@@ -94,7 +95,7 @@ public partial class PerfProbe : CanvasLayer
     }
 
     /// <summary>
-    /// SPIKE (style test): face.png from in front of the character, then walk1–3.png while it walks seen from the side,
+    /// face.png (and face-dazed.png) from in front of the character, team.png with three more players, then walk1–3.png while it walks seen from the side,
     /// and jump1–3.png in the air and landing. Puts the character back where it started afterwards.
     /// </summary>
     async Task MotionShots(Camera3D cam, Func<string, Task> shot)
@@ -110,14 +111,14 @@ public partial class PerfProbe : CanvasLayer
         cam.MakeCurrent();
         cam.LookAtFromPosition(start + fwd * 2.6f + Vector3.Up * 1.4f, start + Vector3.Up * 1.1f, Vector3.Up);
         await shot("face.png");
-        var me = p.GetNode<SoftFigure>("Figure3D");
+        var me = p.GetNode<Figure>("Figure3D");
         me.Face = FigureFace.Dazed;
         await shot("face-dazed.png");
         me.Face = FigureFace.Normal;
 
         // four players side by side, told apart by colour and hat
         var figureRot = p.GetNode<Node3D>("Figure3D").GlobalRotation;
-        var team = new List<SoftFigure>();
+        var team = new List<Figure>();
         foreach (var (k, body, hat) in new[]
         {
             (-2.4f, new Color(0.18f, 0.72f, 0.66f), new Color(1f, 0.8f, 0.2f)),
@@ -125,7 +126,7 @@ public partial class PerfProbe : CanvasLayer
             (1.2f, new Color(1f, 0.82f, 0.25f), new Color(0.3f, 0.7f, 0.35f)),
         })
         {
-            var f = new SoftFigure { Tint = body, HatColor = hat, Face = k == -1.2f ? FigureFace.Dazed : FigureFace.Normal };
+            var f = new Figure { Tint = body, HatColor = hat, Face = k == -1.2f ? FigureFace.Dazed : FigureFace.Normal };
             _world.AddChild(f);
             f.GlobalPosition = start + side * k;
             f.GlobalRotation = figureRot;
