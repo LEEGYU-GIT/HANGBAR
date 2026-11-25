@@ -2,7 +2,7 @@ namespace Hangbar.Core.World.Gen;
 
 /// <summary>
 /// The v2 generator pipeline (v2 design §5): palette contrast → Shape → edge band → strata → underground → Build →
-/// weathering → View → hidden mural → surface map.
+/// weathering → View → hidden mural → prop rules → surface map.
 /// </summary>
 public static class WorldGenerator
 {
@@ -21,10 +21,11 @@ public static class WorldGenerator
         Weathering.Apply(ctx);
         var view = scene.View(ctx);
         var mural = HiddenMural.Place(ctx, view);
+        PropRules.Apply(ctx, view);
 
         double dx = view.Target.X - view.Spawn.X, dz = view.Target.Z - view.Spawn.Z;
         float facing = (float)(Math.Atan2(-dx, -dz) * 180 / Math.PI);
         return new GeneratedWorld(ctx.World, SurfaceMap.Of(ctx.World, seed), scene.Kind, mood, seed, view.Spawn, facing,
-            Horizon.PitchDegrees(horizon), ctx.Props, ctx.Structures, ctx.BurialSpots, landmark, mural);
+            Horizon.PitchDegrees(horizon), ctx.Props, ctx.Structures, ctx.BurialSpots, landmark, mural, view.Target);
     }
 }

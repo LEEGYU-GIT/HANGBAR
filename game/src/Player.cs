@@ -3,7 +3,7 @@ using Godot;
 namespace Inpc.Game;
 
 /// <summary>
-/// Third-person walker (design §6-5). Origin at the feet. WASD move, Shift run, Space jump, mouse look
+/// Third-person walker (design Â§6-5). Origin at the feet. WASD move, Shift run, Space jump, mouse look
 /// (click to capture, Esc to release). Steps up ledges of up to two blocks so 0.25 m terrain never snags.
 /// </summary>
 public partial class Player : CharacterBody3D
@@ -44,6 +44,17 @@ public partial class Player : CharacterBody3D
         _arm.AddChild(Camera);
         Camera.MakeCurrent();
         FloorSnapLength = 0.3f;
+    }
+
+    /// <summary>
+    /// Turns the view: <paramref name="yawDegrees"/> uses Godot's convention (forward = (−sin, 0, −cos)), negative
+    /// <paramref name="pitchDegrees"/> looks down. The camera stays behind the character on its spring arm.
+    /// </summary>
+    public void SetView(float yawDegrees, float pitchDegrees)
+    {
+        _yaw.RotationDegrees = new Vector3(0, yawDegrees, 0);
+        _arm.RotationDegrees = new Vector3(Mathf.Clamp(pitchDegrees - 10, -70, 30), 0, 0);
+        _figure.Rotation = new Vector3(0, Mathf.DegToRad(yawDegrees) - Rotation.Y, 0);
     }
 
     public override void _UnhandledInput(InputEvent e)

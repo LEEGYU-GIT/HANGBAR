@@ -6,7 +6,7 @@ namespace Inpc.Game;
 
 /// <summary>
 /// F3 HUD (fps, frame time, triangles, draw calls, chunks) and the benchmark mode (--bench=SECONDS --out=FILE):
-/// the camera flies a fixed path, eye height around the map for the first half and 20 m up for the second half,
+/// the camera flies a fixed path, eye height around the map for the first half and max(20 m, highest ground + 5 m) for the second half,
 /// the first 2 s are discarded, then frame times are written as JSON and the game quits.
 /// </summary>
 public partial class PerfProbe : CanvasLayer
@@ -133,10 +133,13 @@ public partial class PerfProbe : CanvasLayer
         else
         {
             var p = center + new Vector3((float)Math.Cos(a), 0, (float)Math.Sin(a)) * (half * 0.6f);
-            p.Y = 20f;
+            p.Y = HighPath();
             _benchCam!.LookAtFromPosition(p, center, Vector3.Up);
         }
     }
+
+    /// <summary>Height of the upper lap: 20 m, or 5 m over the highest ground when the world is taller (v2 mountains).</summary>
+    float HighPath() => Math.Max(20f, _world.Map.Height.Max() * Hangbar.Core.World.ChunkMesher.BlockSize + 5f);
 
     float GroundAt(Vector3 p)
     {

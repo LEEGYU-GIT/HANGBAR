@@ -415,13 +415,14 @@ public sealed class HouseScene : IScene
             ctx.Landmark = new Landmark("greenhouse", new BlockPos(cx, Ground + 5, cz));
         }
 
-        // trees in the yard and beyond the fence
+        // a few trees in the yard (a lawn, not a wood), more beyond the fence
         bool Covered(int x, int z) => ctx.Structures.Any(s => x >= s.Min.X - 2 && x <= s.Max.X + 2 && z >= s.Min.Z - 2 && z <= s.Max.Z + 2);
         for (int b = 2; b < N - 2; b++)
             for (int a = 2; a < N - 2; a++)
             {
                 var (x, z) = _f.W(a, b);
-                if (ctx.Path[z * N + x] || ctx.Noise.Hash01(x, z, 77) >= 1.0 / 70 || Covered(x, z)) continue;
+                bool inYard = a >= fa0 && a <= fa1 && b >= fb0 && b <= fb1;
+                if (ctx.Path[z * N + x] || ctx.Noise.Hash01(x, z, 77) >= (inYard ? 1.0 / 300 : 1.0 / 80) || Covered(x, z)) continue;
                 if (w.Get(x, Ground, z) != Block.Air || !Block.IsSolid(w.Get(x, Ground - 1, z))) continue;
                 ctx.Props.Add(new Prop(PropKind.Tree, x, z, (float)(0.9 + 0.5 * ctx.Noise.Hash01(x, z, 78)), ctx.Colors.Accent));
             }

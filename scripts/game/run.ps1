@@ -1,5 +1,6 @@
 param(
   [string]$Photo = "",
+  [ValidateSet("", "beach", "pool", "house", "mountain")][string]$Scene = "",   # v2 scene; empty = the G0 world
   [ValidateSet("low", "medium")][string]$Quality = "medium",
   [string[]]$Extra = @(),          # more user args, e.g. "--bench=30"
   [string[]]$GodotArgs = @()       # engine args before "--", e.g. "--resolution","1920x1080"
@@ -19,5 +20,6 @@ if (-not (Test-Path (Join-Path $game ".godot"))) {
 }
 
 $user = @("--quality=$Quality") + $Extra
+if ($Scene -ne "") { $user = @("--scene=$Scene") + $user }
 if ($Photo -ne "") { $user = @("--photo=$Photo") + $user }
 & $godot.FullName (@("--path", $game) + $GodotArgs + @("--") + $user)

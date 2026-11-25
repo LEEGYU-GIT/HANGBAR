@@ -84,6 +84,8 @@ public sealed class SceneContext
 /// <summary>The result of the v2 generator.</summary>
 /// <param name="FacingDegrees">Godot yaw: forward is (−sin, 0, −cos).</param>
 /// <param name="PitchDegrees">Negative looks down.</param>
+/// <param name="Target">What the first view looks at (the scene view target).</param>
 public sealed record GeneratedWorld(
     VoxelWorld World, FileMap Surface, Scene Scene, Mood Mood, ulong Seed, BlockPos Spawn, float FacingDegrees, float PitchDegrees,
-    IReadOnlyList<Prop> Props, IReadOnlyList<PlacedPart> Structures, IReadOnlyList<BlockPos> BurialSpots, Landmark Landmark, MuralSpot Mural);
+    IReadOnlyList<Prop> Props, IReadOnlyList<PlacedPart> Structures, IReadOnlyList<BlockPos> BurialSpots, Landmark Landmark, MuralSpot Mural,
+    BlockPos Target);
