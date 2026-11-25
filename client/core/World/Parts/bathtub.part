@@ -1,0 +1,22 @@
+part: bathtub
+size: 9 3 5                  # rim 3 high, open inside
+legend:
+  T = Tile light
+layer 0:
+TTTTTTTTT
+TTTTTTTTT
+TTTTTTTTT
+TTTTTTTTT
+TTTTTTTTT
+layer 1:
+TTTTTTTTT
+T.......T
+T.......T
+T.......T
+TTTTTTTTT
+layer 2:
+TTTTTTTTT
+T.......T
+T.......T
+T.......T
+TTTTTTTTT

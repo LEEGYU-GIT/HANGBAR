@@ -1,0 +1,37 @@
+part: wardrobe
+size: 6 8 3                  # 2 m tall
+legend:
+  W = Wood dark
+  H = Wood light
+layer 0:
+WWWWWW
+WWWWWW
+WWWWWW
+layer 1:
+WWWWWW
+WWWWWW
+WWWWWW
+layer 2:
+WWWWWW
+WWWWWW
+WWWWWW
+layer 3:
+WWHHWW
+WWWWWW
+WWWWWW
+layer 4:
+WWHHWW
+WWWWWW
+WWWWWW
+layer 5:
+WWWWWW
+WWWWWW
+WWWWWW
+layer 6:
+WWWWWW
+WWWWWW
+WWWWWW
+layer 7:
+WWWWWW
+WWWWWW
+WWWWWW

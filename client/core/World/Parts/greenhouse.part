@@ -1,0 +1,107 @@
+part: greenhouse
+size: 12 11 8                # glass walls and roof on a metal frame, a 4x9 door at the front, planting beds
+legend:
+  G = Glass #CFE8D2
+  M = Metal dark
+  F = Tile secondary
+  P = Soil #5B3A29
+anchor: door 4 1 0
+layer 0:
+FFFFFFFFFFFF
+FFFFFFFFFFFF
+FFFFFFFFFFFF
+FFFFFFFFFFFF
+FFFFFFFFFFFF
+FFFFFFFFFFFF
+FFFFFFFFFFFF
+FFFFFFFFFFFF
+layer 1:
+MGGG....GGGM
+GPP......PPG
+GPP......PPG
+GPP......PPG
+GPP......PPG
+GPP......PPG
+GPP......PPG
+MGGGGGGGGGGM
+layer 2:
+MGGG....GGGM
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+MGGGGGGGGGGM
+layer 3:
+MGGG....GGGM
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+MGGGGGGGGGGM
+layer 4:
+MGGG....GGGM
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+MGGGGGGGGGGM
+layer 5:
+MGGG....GGGM
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+MGGGGGGGGGGM
+layer 6:
+MGGG....GGGM
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+MGGGGGGGGGGM
+layer 7:
+MGGG....GGGM
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+MGGGGGGGGGGM
+layer 8:
+MGGG....GGGM
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+MGGGGGGGGGGM
+layer 9:
+MGGG....GGGM
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+G..........G
+MGGGGGGGGGGM
+layer 10:
+MGGGGGGGGGGM
+GGGGGGGGGGGG
+GGGGGGGGGGGG
+GGGGGGGGGGGG
+GGGGGGGGGGGG
+GGGGGGGGGGGG
+GGGGGGGGGGGG
+MGGGGGGGGGGM

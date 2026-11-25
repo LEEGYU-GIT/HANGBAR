@@ -1,0 +1,30 @@
+part: bookshelf
+size: 6 8 2                  # 2 m tall shelf (8 blocks); books on the front row
+legend:
+  W = Wood secondary
+  B = Cloth accent
+  D = Cloth dark
+layer 0:
+WWWWWW
+WWWWWW
+layer 1:
+WBBDBW
+WWWWWW
+layer 2:
+WBBDBW
+WWWWWW
+layer 3:
+WWWWWW
+WWWWWW
+layer 4:
+WDBBBW
+WWWWWW
+layer 5:
+WDBBBW
+WWWWWW
+layer 6:
+WWWWWW
+WWWWWW
+layer 7:
+WWWWWW
+WWWWWW

@@ -1,0 +1,135 @@
+part: treehouse
+size: 7 16 7                 # a trunk, a platform 10 up, a small hut with an opening, a cloth roof
+legend:
+  T = Wood dark
+  F = Wood secondary
+  W = Wood light
+  R = Cloth accent
+layer 0:
+_______
+_______
+_______
+___T___
+_______
+_______
+_______
+layer 1:
+_______
+_______
+_______
+___T___
+_______
+_______
+_______
+layer 2:
+_______
+_______
+_______
+___T___
+_______
+_______
+_______
+layer 3:
+_______
+_______
+_______
+___T___
+_______
+_______
+_______
+layer 4:
+_______
+_______
+_______
+___T___
+_______
+_______
+_______
+layer 5:
+_______
+_______
+_______
+___T___
+_______
+_______
+_______
+layer 6:
+_______
+_______
+_______
+___T___
+_______
+_______
+_______
+layer 7:
+_______
+_______
+_______
+___T___
+_______
+_______
+_______
+layer 8:
+_______
+_______
+_______
+___T___
+_______
+_______
+_______
+layer 9:
+_______
+_______
+_______
+___T___
+_______
+_______
+_______
+layer 10:
+FFFFFFF
+FFFFFFF
+FFFFFFF
+FFFFFFF
+FFFFFFF
+FFFFFFF
+FFFFFFF
+layer 11:
+WW...WW
+W.....W
+W.....W
+W.....W
+W.....W
+W.....W
+WWWWWWW
+layer 12:
+WW...WW
+W.....W
+W.....W
+W.....W
+W.....W
+W.....W
+WWWWWWW
+layer 13:
+WW...WW
+W.....W
+W.....W
+W.....W
+W.....W
+W.....W
+WWWWWWW
+layer 14:
+RRRRRRR
+RRRRRRR
+RRRRRRR
+RRRRRRR
+RRRRRRR
+RRRRRRR
+RRRRRRR
+layer 15:
+_______
+_RRRRR_
+_RRRRR_
+_RRRRR_
+_RRRRR_
+_RRRRR_
+_______

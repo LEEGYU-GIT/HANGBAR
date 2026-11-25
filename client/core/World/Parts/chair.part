@@ -1,0 +1,12 @@
+part: chair
+size: 3 2 3                  # seat height 2 (0.5 m)
+legend:
+  C = Wood dark
+layer 0:
+C_C
+___
+C_C
+layer 1:
+CCC
+CCC
+CCC

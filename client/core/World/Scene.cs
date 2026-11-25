@@ -21,6 +21,7 @@ public static class Scenes
     {
         Scene.Beach => new BeachScene(),
         Scene.Pool => new PoolScene(),
+        Scene.House => new HouseScene(),
         Scene.Mountain => new MountainScene(),
         _ => throw new NotSupportedException($"scene {s} is not built yet"),
     };

@@ -1,0 +1,228 @@
+part: house_shell
+size: 16 17 12               # a neighbour's house, outside only: closed door, dark windows, pitched roof
+legend:
+  B = Brick secondary
+  R = Concrete dark
+  D = DarkGlass #2E3A44
+  O = Wood dark
+layer 0:
+BBBBBBBBBBBBBBBB
+BBBBBBBBBBBBBBBB
+BBBBBBBBBBBBBBBB
+BBBBBBBBBBBBBBBB
+BBBBBBBBBBBBBBBB
+BBBBBBBBBBBBBBBB
+BBBBBBBBBBBBBBBB
+BBBBBBBBBBBBBBBB
+BBBBBBBBBBBBBBBB
+BBBBBBBBBBBBBBBB
+BBBBBBBBBBBBBBBB
+BBBBBBBBBBBBBBBB
+layer 1:
+BBBBBBOOOOBBBBBB
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+BBBBBBBBBBBBBBBB
+layer 2:
+BBBBBBOOOOBBBBBB
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+BBBBBBBBBBBBBBBB
+layer 3:
+BBBBBBOOOOBBBBBB
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+BBBBBBBBBBBBBBBB
+layer 4:
+BBDDDBOOOOBDDDBB
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+BBBBBBBBBBBBBBBB
+layer 5:
+BBDDDBOOOOBDDDBB
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+BBBBBBBBBBBBBBBB
+layer 6:
+BBDDDBOOOOBDDDBB
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+BBBBBBBBBBBBBBBB
+layer 7:
+BBDDDBOOOOBDDDBB
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+BBBBBBBBBBBBBBBB
+layer 8:
+BBBBBBOOOOBBBBBB
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+BBBBBBBBBBBBBBBB
+layer 9:
+BBBBBBOOOOBBBBBB
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+BBBBBBBBBBBBBBBB
+layer 10:
+BBDDDBBBBBBDDDBB
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+BBBBBBBBBBBBBBBB
+layer 11:
+BBDDDBBBBBBDDDBB
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+BBBBBBBBBBBBBBBB
+layer 12:
+BBBBBBBBBBBBBBBB
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+B______________B
+BBBBBBBBBBBBBBBB
+layer 13:
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+layer 14:
+________________
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+________________
+layer 15:
+________________
+________________
+________________
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+________________
+________________
+________________
+layer 16:
+________________
+________________
+________________
+________________
+________________
+RRRRRRRRRRRRRRRR
+RRRRRRRRRRRRRRRR
+________________
+________________
+________________
+________________
+________________

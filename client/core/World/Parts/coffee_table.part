@@ -1,0 +1,19 @@
+part: coffee_table
+size: 6 3 4                  # table height 3 (0.75 m)
+legend:
+  W = Wood secondary
+layer 0:
+W____W
+______
+______
+W____W
+layer 1:
+W____W
+______
+______
+W____W
+layer 2:
+WWWWWW
+WWWWWW
+WWWWWW
+WWWWWW

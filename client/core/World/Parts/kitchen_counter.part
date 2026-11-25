@@ -1,0 +1,22 @@
+part: kitchen_counter
+size: 4 4 3                  # cabinets with a tiled top; stretch along x
+legend:
+  C = Wood light
+  T = Tile dark
+stretch: x 1 2
+layer 0:
+CCCC
+CCCC
+CCCC
+layer 1:
+CCCC
+CCCC
+CCCC
+layer 2:
+CCCC
+CCCC
+CCCC
+layer 3:
+TTTT
+TTTT
+TTTT

@@ -1,0 +1,16 @@
+part: sink
+size: 3 4 2                  # a basin on a pedestal
+legend:
+  P = Tile light
+layer 0:
+___
+_P_
+layer 1:
+___
+_P_
+layer 2:
+___
+_P_
+layer 3:
+PPP
+PPP

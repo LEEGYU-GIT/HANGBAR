@@ -1,0 +1,17 @@
+part: sofa
+size: 8 3 3                  # seat 2 high, back and arms 3; the back (z=2) goes against the wall
+legend:
+  S = Cloth accent
+  C = Cloth secondary
+layer 0:
+SSSSSSSS
+SSSSSSSS
+SSSSSSSS
+layer 1:
+CCCCCCCC
+CCCCCCCC
+SSSSSSSS
+layer 2:
+S______S
+S______S
+SSSSSSSS

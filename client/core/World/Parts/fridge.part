@@ -1,0 +1,37 @@
+part: fridge
+size: 4 8 3                  # 2 m tall
+legend:
+  M = Metal light
+  H = Metal dark
+layer 0:
+MMMM
+MMMM
+MMMM
+layer 1:
+MMMM
+MMMM
+MMMM
+layer 2:
+MMMM
+MMMM
+MMMM
+layer 3:
+MMMM
+MMMM
+MMMM
+layer 4:
+MHMM
+MMMM
+MMMM
+layer 5:
+MMMM
+MMMM
+MMMM
+layer 6:
+MMMM
+MMMM
+MMMM
+layer 7:
+MMMM
+MMMM
+MMMM

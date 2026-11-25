@@ -1,0 +1,26 @@
+part: bed
+size: 6 2 9                  # height 2 (0.5 m); the head (z=8) goes against the wall
+legend:
+  W = Wood dark
+  M = Cloth light
+  P = Cloth secondary
+layer 0:
+WWWWWW
+WWWWWW
+WWWWWW
+WWWWWW
+WWWWWW
+WWWWWW
+WWWWWW
+WWWWWW
+WWWWWW
+layer 1:
+MMMMMM
+MMMMMM
+MMMMMM
+MMMMMM
+MMMMMM
+MMMMMM
+MMMMMM
+PPPPPP
+PPPPPP

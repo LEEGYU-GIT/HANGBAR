@@ -1,0 +1,25 @@
+part: dining_table
+size: 8 3 6                  # table height 3 (0.75 m)
+legend:
+  W = Wood secondary
+layer 0:
+W______W
+________
+________
+________
+________
+W______W
+layer 1:
+W______W
+________
+________
+________
+________
+W______W
+layer 2:
+WWWWWWWW
+WWWWWWWW
+WWWWWWWW
+WWWWWWWW
+WWWWWWWW
+WWWWWWWW

@@ -1,0 +1,23 @@
+part: tv_stand
+size: 6 6 2                  # a low cabinet with a screen standing on its back row
+legend:
+  W = Wood dark
+  T = DarkGlass #1A1F24
+layer 0:
+WWWWWW
+WWWWWW
+layer 1:
+WWWWWW
+WWWWWW
+layer 2:
+______
+TTTTTT
+layer 3:
+______
+TTTTTT
+layer 4:
+______
+TTTTTT
+layer 5:
+______
+TTTTTT
