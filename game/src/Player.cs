@@ -3,7 +3,7 @@ using Godot;
 namespace Inpc.Game;
 
 /// <summary>
-/// Third-person walker (design Â§6-5). Origin at the feet. WASD move, Shift run, Space jump, mouse look
+/// Third-person walker (design §6-5). Origin at the feet. WASD move, Shift run, Space jump, mouse look
 /// (click to capture, Esc to release). Steps up ledges of up to two blocks so 0.25 m terrain never snags.
 /// </summary>
 public partial class Player : CharacterBody3D

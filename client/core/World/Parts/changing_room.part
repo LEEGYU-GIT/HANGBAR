@@ -1,14 +1,15 @@
 part: changing_room
-size: 18 13 10               # changing side (x 1-7, closed glass doors) and a walk-in plant room (x 9-16, 8x11x8) with a 4x9 back door
+size: 18 13 11               # changing side (x 1-7, closed glass doors) and a walk-in plant room (x 9-16, z 2-9: 8x11x8) with a 4x9 back door; the plant room's front wall is two blocks thick so the framed photo inside never shows outside
 legend:
   W = Concrete light
   F = Tile secondary
   R = Concrete dark
   D = DarkGlass #2E3A44
-anchor: door 12 1 9
-anchor: mural_a 10 2 0
-anchor: mural_b 15 2 0
+anchor: door 12 1 10
+anchor: mural_a 10 2 1
+anchor: mural_b 15 2 1
 layer 0:
+FFFFFFFFFFFFFFFFFF
 FFFFFFFFFFFFFFFFFF
 FFFFFFFFFFFFFFFFFF
 FFFFFFFFFFFFFFFFFF
@@ -21,6 +22,7 @@ FFFFFFFFFFFFFFFFFF
 FFFFFFFFFFFFFFFFFF
 layer 1:
 WWDDDDWWWWWWWWWWWW
+W.......WWWWWWWWWW
 W.......W........W
 W.......W........W
 W.......W........W
@@ -32,6 +34,7 @@ W.......W........W
 WWWWWWWWWWW....WWW
 layer 2:
 WWDDDDWWWWWWWWWWWW
+W.......WWWWWWWWWW
 W.......W........W
 W.......W........W
 W.......W........W
@@ -43,6 +46,7 @@ W.......W........W
 WWWWWWWWWWW....WWW
 layer 3:
 WWDDDDWWWWWWWWWWWW
+W.......WWWWWWWWWW
 W.......W........W
 W.......W........W
 W.......W........W
@@ -54,6 +58,7 @@ W.......W........W
 WWWWWWWWWWW....WWW
 layer 4:
 WWDDDDWWWWWWWWWWWW
+W.......WWWWWWWWWW
 W.......W........W
 W.......W........W
 W.......W........W
@@ -65,6 +70,7 @@ W.......W........W
 WWWWWWWWWWW....WWW
 layer 5:
 WWDDDDWWWWWWWWWWWW
+W.......WWWWWWWWWW
 W.......W........W
 W.......W........W
 W.......W........W
@@ -76,6 +82,7 @@ W.......W........W
 WWWWWWWWWWW....WWW
 layer 6:
 WWDDDDWWWWWWWWWWWW
+W.......WWWWWWWWWW
 W.......W........W
 W.......W........W
 W.......W........W
@@ -87,39 +94,43 @@ W.......W........W
 WWWWWWWWWWW....WWW
 layer 7:
 WWDDDDWWWWWWWWWWWW
+W.......WWWWWWWWWW
 W.......W........W
+D.......W........W
+D.......W........W
+D.......W........W
+D.......W........W
 W.......W........W
-D.......W........W
-D.......W........W
-D.......W........W
-D.......W........W
 W.......W........W
 W.......W........W
 WWWWWWWWWWW....WWW
 layer 8:
 WWDDDDWWWWWWWWWWWW
+W.......WWWWWWWWWW
 W.......W........W
+D.......W........W
+D.......W........W
+D.......W........W
+D.......W........W
 W.......W........W
-D.......W........W
-D.......W........W
-D.......W........W
-D.......W........W
 W.......W........W
 W.......W........W
 WWWWWWWWWWW....WWW
 layer 9:
 WWWWWWWWWWWWWWWWWW
+W.......WWWWWWWWWW
 W.......W........W
+D.......W........W
+D.......W........W
+D.......W........W
+D.......W........W
 W.......W........W
-D.......W........W
-D.......W........W
-D.......W........W
-D.......W........W
 W.......W........W
 W.......W........W
 WWWWWWWWWWW....WWW
 layer 10:
 WWWWWWWWWWWWWWWWWW
+W.......WWWWWWWWWW
 W.......W........W
 W.......W........W
 W.......W........W
@@ -131,6 +142,7 @@ W.......W........W
 WWWWWWWWWWWWWWWWWW
 layer 11:
 WWWWWWWWWWWWWWWWWW
+W.......WWWWWWWWWW
 W.......W........W
 W.......W........W
 W.......W........W
@@ -141,6 +153,7 @@ W.......W........W
 W.......W........W
 WWWWWWWWWWWWWWWWWW
 layer 12:
+RRRRRRRRRRRRRRRRRR
 RRRRRRRRRRRRRRRRRR
 RRRRRRRRRRRRRRRRRR
 RRRRRRRRRRRRRRRRRR

@@ -9,7 +9,7 @@ namespace Hangbar.Core.World.Gen;
 /// </summary>
 public static class HiddenMural
 {
-    public const int MinDistance = 40, FallbackWidth = 24, FallbackHeight = 18;
+    public const int MinDistance = 40, FallbackWidth = 24, FallbackHeight = 18, FallbackApron = 6;
     const double EyeHeight = 6.4;
 
     public static MuralSpot Place(SceneContext ctx, SceneView view)
@@ -20,7 +20,10 @@ public static class HiddenMural
             if (TryStamp(ctx, view.Spawn, spot, reach)) return spot;
 
         // fallback: from the farthest reachable cells inward, a wall between the cell and the spawn, picture facing the cell
-        var far = reach.Where(p => Math.Max(Math.Abs(p.X - view.Spawn.X), Math.Abs(p.Z - view.Spawn.Z)) >= MinDistance + 4)
+        // stand cells away from the map edge: someone 0.6 m wide must fit between the picture and the edge wall
+        int n = w.SizeX;
+        var far = reach.Where(p => Math.Min(Math.Min(p.X, p.Z), Math.Min(n - 1 - p.X, n - 1 - p.Z)) >= FallbackApron)
+            .Where(p => Math.Max(Math.Abs(p.X - view.Spawn.X), Math.Abs(p.Z - view.Spawn.Z)) >= MinDistance + 4)
             .OrderByDescending(p => Dist(p, view.Spawn)).ThenBy(p => p.X).ThenBy(p => p.Z).ThenBy(p => p.Y);
         MuralSpot? last = null;
         int tries = 0;
@@ -61,12 +64,26 @@ public static class HiddenMural
         _ => (-1, 0),
     };
 
-    /// <summary>Rule ①: the centre and the four corners are all hidden from the spawn's eye.</summary>
+    /// <summary>
+    /// Rule ①: the centre and the four corners are all hidden from the spawn's eye, and so is the picture's back:
+    /// photo blocks show the photo on every face, so a wall one block thick would show it mirrored from behind.
+    /// Every picture block whose cell behind is not opaque has its back face checked.
+    /// </summary>
     public static bool IsHidden(VoxelWorld w, BlockPos spawn, MuralSpot m)
     {
         var eye = (spawn.X + 0.5, spawn.Y + EyeHeight, spawn.Z + 0.5);
         foreach (var p in FacePoints(m))
             if (Sight.Clear(w, eye, p)) return false;
+        var (rx, rz) = RightOf(m.Facing);
+        var (nx, nz) = NormalOf(m.Facing);
+        for (int c = 0; c < m.Width; c++)
+            for (int r = 0; r < m.Height; r++)
+            {
+                int bx = m.Origin.X + rx * c - nx, by = m.Origin.Y + r, bz = m.Origin.Z + rz * c - nz;
+                if (Block.IsOpaque(w.Get(bx, by, bz))) continue;
+                var back = (m.Origin.X + 0.5 + rx * c - nx * 0.51, by + 0.5, m.Origin.Z + 0.5 + rz * c - nz * 0.51);
+                if (Sight.Clear(w, eye, back)) return false;
+            }
         return true;
     }
 
@@ -127,17 +144,25 @@ public static class HiddenMural
         return InBounds(ctx.World, spot) ? spot : null;
     }
 
-    /// <summary>The picture plus a stone plinth under columns whose ground is lower than the picture's bottom row.</summary>
+    /// <summary>
+    /// The picture, a stone back one block behind it (so the photo never shows from behind) and a stone plinth under
+    /// columns whose ground is lower than the picture's bottom row.
+    /// </summary>
     static void BuildWall(SceneContext ctx, MuralSpot spot)
     {
         var w = ctx.World;
         var (rx, rz) = RightOf(spot.Facing);
-        uint plinth = Block.Solid(ctx.ColorOf(Material.Stone), Material.Stone);
+        var (nx, nz) = NormalOf(spot.Facing);
+        uint stone = Block.Solid(ctx.ColorOf(Material.Stone), Material.Stone);
         for (int c = 0; c < spot.Width; c++)
-        {
-            int x = spot.Origin.X + rx * c, z = spot.Origin.Z + rz * c;
-            for (int y = spot.Origin.Y - 1; y > 1 && !Block.IsSolid(w.Get(x, y, z)); y--) w.Set(x, y, z, plinth);
-        }
+            foreach (int back in new[] { 0, 1 })
+            {
+                int x = spot.Origin.X + rx * c - nx * back, z = spot.Origin.Z + rz * c - nz * back;
+                for (int y = spot.Origin.Y - 1; y > 1 && !Block.IsSolid(w.Get(x, y, z)); y--) w.Set(x, y, z, stone);
+                if (back == 1)
+                    for (int y = spot.Origin.Y; y < spot.Origin.Y + spot.Height; y++)
+                        if (!Block.IsOpaque(w.Get(x, y, z))) w.Set(x, y, z, stone);
+            }
         Mural.Stamp(w, ctx.Photo, spot, ctx.Colors.Dark);
     }
 
@@ -151,17 +176,19 @@ public static class HiddenMural
 
     static double Dist(BlockPos a, BlockPos b) => Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Z - b.Z) * (a.Z - b.Z));
 
-    /// <summary>Every block a stamp or wall may touch (frame and plinth included), to undo a rejected spot.</summary>
+    /// <summary>Every block a stamp or wall may touch (frame, plinth and back included), to undo a rejected spot.</summary>
     static List<(int X, int Y, int Z, uint B)> Backup(VoxelWorld w, MuralSpot m)
     {
         var (rx, rz) = RightOf(m.Facing);
+        var (nx, nz) = NormalOf(m.Facing);
         var list = new List<(int, int, int, uint)>();
         for (int c = -1; c <= m.Width; c++)
-            for (int y = 2; y <= m.Origin.Y + m.Height; y++)
-            {
-                int x = m.Origin.X + rx * c, z = m.Origin.Z + rz * c;
-                list.Add((x, y, z, w.Get(x, y, z)));
-            }
+            foreach (int back in new[] { 0, 1 })
+                for (int y = 2; y <= m.Origin.Y + m.Height; y++)
+                {
+                    int x = m.Origin.X + rx * c - nx * back, z = m.Origin.Z + rz * c - nz * back;
+                    list.Add((x, y, z, w.Get(x, y, z)));
+                }
         return list;
     }
 

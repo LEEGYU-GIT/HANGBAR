@@ -43,6 +43,33 @@ public class HiddenMuralTests
         Assert.Equal(Material.Pixel, Block.MaterialOf(w.Get(32, 4, 32)));
     }
 
+    /// <summary>A picture facing south on a free-standing wall at z = 32, seen from a spawn north of it (behind it).</summary>
+    static (VoxelWorld W, BlockPos Spawn, MuralSpot Spot) WallSeenFromBehind(bool backed)
+    {
+        var w = new VoxelWorld(64, 32, 64);
+        var spot = new MuralSpot(new BlockPos(24, 2, 32), Facing.South, 16, 12, false);
+        Mural.Stamp(w, Halves(), spot);
+        if (backed)
+            for (int y = 2; y < 14; y++)
+                for (int x = 24; x <= 39; x++) w.Set(x, y, 31, Block.Solid(0x808080, Material.Stone));
+        return (w, new BlockPos(16, 2, 8), spot);
+    }
+
+    [Fact]
+    public void Back_of_a_thin_wall_counts_as_seen()
+    {
+        // photo blocks show the photo on every face: a one-block wall shows the picture mirrored from behind
+        var (w, spawn, spot) = WallSeenFromBehind(backed: false);
+        Assert.False(HiddenMural.IsHidden(w, spawn, spot));
+    }
+
+    [Fact]
+    public void Wall_with_a_solid_back_stays_hidden_from_behind()
+    {
+        var (w, spawn, spot) = WallSeenFromBehind(backed: true);
+        Assert.True(HiddenMural.IsHidden(w, spawn, spot));
+    }
+
     public static IEnumerable<object[]> Seeds => Enumerable.Range(1, 20).Select(s => new object[] { (ulong)s });
 
     [Theory, MemberData(nameof(Seeds))]
@@ -77,5 +104,22 @@ public class HiddenMuralTests
         Assert.True(HiddenMural.IsHidden(g.World, g.Spawn, g.Mural));
         Assert.True(HiddenMural.Distance(g.Spawn, g.Mural) >= 40);
         Assert.True(HiddenMural.IsReachable(Walkability.ReachCells(g.World, g.Spawn), g.Mural));
+    }
+
+    [Theory]
+    [InlineData(1UL)] [InlineData(4UL)] [InlineData(9UL)]
+    public void Fallback_wall_leaves_room_to_stand_in_front(ulong seed)
+    {
+        // the map edge has an invisible wall: someone 0.6 m wide must fit in front of the picture
+        var g = WeatheringTests.Make(seed, withCandidate: false);
+        var m = g.Mural;
+        var (rx, rz) = HiddenMural.RightOf(m.Facing);
+        var (nx, nz) = HiddenMural.NormalOf(m.Facing);
+        int n = g.World.SizeX;
+        for (int k = 1; k <= HiddenMural.FallbackApron; k++)
+        {
+            int x = m.Origin.X + rx * (m.Width / 2) + nx * k, z = m.Origin.Z + rz * (m.Width / 2) + nz * k;
+            Assert.True(x >= 0 && z >= 0 && x < n && z < n, $"seed {seed}: no room {k} cells in front of the picture");
+        }
     }
 }

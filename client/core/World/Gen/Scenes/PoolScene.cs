@@ -14,7 +14,7 @@ public sealed class PoolScene : IScene
     const int N = SceneContext.Size, Edge = SceneContext.EdgeBand;
     const int DeckTop = 56, Ground = DeckTop + 1, Level = DeckTop + 1; // Surface of the deck, WaterTop of the pool
     const int Shallow = 5, Deep = 8, Lane = 8;
-    const int EndDeck = 14, SideDeck = 18, RoomW = 18, RoomD = 10, Behind = 7, Gate = 6, Walkway = 3;
+    const int EndDeck = 14, SideDeck = 18, RoomW = 18, RoomD = 11, Behind = 7, Gate = 6, Walkway = 3;
     const int SpawnBack = 7;
 
     public Scene Kind => Scene.Pool;
