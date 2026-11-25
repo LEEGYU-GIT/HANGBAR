@@ -45,6 +45,11 @@ public sealed class SceneContext
     /// <summary>Columns that caves must not touch (spawn yard, building plots).</summary>
     public bool[] NoCaves { get; } = new bool[Size * Size];
     public bool[] Path { get; } = new bool[Size * Size];
+    /// <summary>
+    /// Columns where someone steps up 1–2 blocks without jumping (user decision 2026-11-25: everywhere else a ledge
+    /// needs a jump). Scenes mark their stairs here; paths and door thresholds are added by the generator.
+    /// </summary>
+    public bool[] Stairs { get; } = new bool[Size * Size];
 
     public VoxelWorld World { get; internal set; } = null!;
     public List<Prop> Props { get; } = new();
@@ -85,7 +90,8 @@ public sealed class SceneContext
 /// <param name="FacingDegrees">Godot yaw: forward is (−sin, 0, −cos).</param>
 /// <param name="PitchDegrees">Negative looks down.</param>
 /// <param name="Target">What the first view looks at (the scene view target).</param>
+/// <param name="Stairs">Per column (z·Size + x): stepping up here needs no jump (stairs, paths, door thresholds).</param>
 public sealed record GeneratedWorld(
     VoxelWorld World, FileMap Surface, Scene Scene, Mood Mood, ulong Seed, BlockPos Spawn, float FacingDegrees, float PitchDegrees,
     IReadOnlyList<Prop> Props, IReadOnlyList<PlacedPart> Structures, IReadOnlyList<BlockPos> BurialSpots, Landmark Landmark, MuralSpot Mural,
-    BlockPos Target);
+    BlockPos Target, IReadOnlyList<bool> Stairs);

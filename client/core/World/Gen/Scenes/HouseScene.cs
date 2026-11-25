@@ -195,6 +195,8 @@ public sealed class HouseScene : IScene
         }
 
         Stairs(w, Block.Solid(ctx.ColorOf(Material.Wood), Material.Wood), plaster, concrete);
+        for (int q = 1; q < 21; q++)
+            for (int p = _xL + 1; p < _xL + 9; p++) ctx.Stairs[_f.I(A(p), B(q))] = true; // the whole stairwell
         Windows(w, Block.Solid(0xC8E6F0, Material.Glass));
         ctx.Structures.Add(Box("house", 0, 0, _l, _d, 44, Parapet));
 
@@ -204,7 +206,8 @@ public sealed class HouseScene : IScene
 
     /// <summary>
     /// The stairwell (8 × 20, u = q − 1 from the living-room end): lane U (first 4 columns) climbs ground → upstairs
-    /// along +u, lane D climbs upstairs → roof along −u and, below, descends ground → basement along +u. Pockets
+    /// along +u, lane D climbs upstairs → roof along −u from u = 15 (a 1 m landing at u 16–19 to turn on) and, below,
+    /// descends ground → basement along +u. Pockets
     /// no stair reaches are filled in.
     /// </summary>
     void Stairs(VoxelWorld w, uint step, uint plaster, uint concrete)
@@ -230,10 +233,10 @@ public sealed class HouseScene : IScene
                 Fill(w, p, q, 57 - k, 56, Block.Air);
             }
             for (int u = 16; u <= 19; u++) Fill(w, p, u + 1, 57, 67, plaster);
-            for (int u = 0; u <= 6; u++) Fill(w, p, u + 1, 69, 79, plaster);
+            for (int u = 0; u <= 3; u++) Fill(w, p, u + 1, 69, 79, plaster);
             for (int k = 1; k <= 12; k++)
             {
-                int q = 19 - k + 1; // up to the roof
+                int q = 16 - k + 1; // up to the roof, starting 4 blocks (1 m) short of the end wall: a landing to turn on
                 Fill(w, p, q, 69, 68 + k, step);
                 if (k <= 11) Set(w, p, Roof, q, Block.Air);
             }

@@ -95,6 +95,9 @@ public class BeachSceneTests
     }
 
     [Fact]
+    public void Doors_need_no_jump() => SceneKit.DoorsNeedNoJump(World.Value);
+
+    [Fact]
     public void Most_of_the_map_is_walkable() => Assert.True(SceneKit.WalkableShare(World.Value) >= 0.7);
 
     [Fact]

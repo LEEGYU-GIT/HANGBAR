@@ -121,6 +121,21 @@ public class HouseSceneTests
     }
 
     [Fact]
+    public void Every_floor_can_be_reached_without_jumping()
+    {
+        // only stairs lift you without a jump (user decision 2026-11-25)
+        var g = World.Value;
+        var h = House(g);
+        var reach = SceneKit.ReachWithoutJumping(g, g.Spawn).Where(p => p.X >= h.Min.X && p.X <= h.Max.X && p.Z >= h.Min.Z && p.Z <= h.Max.Z).ToList();
+        Assert.Contains(reach, p => p.Y == Upstairs);
+        Assert.Contains(reach, p => p.Y == Rooftop);
+        Assert.Contains(reach, p => p.Y == Basement);
+    }
+
+    [Fact]
+    public void Doors_need_no_jump() => SceneKit.DoorsNeedNoJump(World.Value);
+
+    [Fact]
     public void Spawn_is_inside_facing_the_window()
     {
         var g = World.Value;

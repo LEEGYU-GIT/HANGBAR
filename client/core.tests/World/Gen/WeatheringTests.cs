@@ -52,6 +52,15 @@ public class WeatheringTests
     }
 
     [Fact]
+    public void Paths_count_as_stairs()
+    {
+        // a trail is walked without jumping: its steps lift you like stairs (user decision 2026-11-25)
+        var g = World.Value;
+        for (int x = 40; x < 150; x++) Assert.True(g.Stairs[(C + 10) * N + x], $"trail column {x} is not a stair");
+        Assert.False(g.Stairs[(C - 40) * N + C], "open ground is not a stair");
+    }
+
+    [Fact]
     public void Ground_by_water_gets_moss()
     {
         var g = World.Value;

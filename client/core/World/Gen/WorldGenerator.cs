@@ -26,6 +26,19 @@ public static class WorldGenerator
         double dx = view.Target.X - view.Spawn.X, dz = view.Target.Z - view.Spawn.Z;
         float facing = (float)(Math.Atan2(-dx, -dz) * 180 / Math.PI);
         return new GeneratedWorld(ctx.World, SurfaceMap.Of(ctx.World, seed), scene.Kind, mood, seed, view.Spawn, facing,
-            Horizon.PitchDegrees(horizon), ctx.Props, ctx.Structures, ctx.BurialSpots, landmark, mural, view.Target);
+            Horizon.PitchDegrees(horizon), ctx.Props, ctx.Structures, ctx.BurialSpots, landmark, mural, view.Target,
+            StairColumns(ctx));
+    }
+
+    /// <summary>The scene's stairs, every path column, and one column round every structure that has a door.</summary>
+    static bool[] StairColumns(SceneContext ctx)
+    {
+        int n = SceneContext.Size;
+        var stairs = new bool[n * n];
+        for (int i = 0; i < stairs.Length; i++) stairs[i] = ctx.Stairs[i] || ctx.Path[i];
+        foreach (var s in ctx.Structures.Where(s => s.Anchors.ContainsKey("door")))
+            for (int z = Math.Max(0, s.Min.Z - 1); z <= Math.Min(n - 1, s.Max.Z + 1); z++)
+                for (int x = Math.Max(0, s.Min.X - 1); x <= Math.Min(n - 1, s.Max.X + 1); x++) stairs[z * n + x] = true;
+        return stairs;
     }
 }

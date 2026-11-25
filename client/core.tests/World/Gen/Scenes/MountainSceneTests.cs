@@ -49,6 +49,21 @@ public class MountainSceneTests
     }
 
     [Fact]
+    public void Trail_needs_no_jumping()
+    {
+        // the trail counts as stairs: the summit and the hut are reached without a jump
+        var g = World.Value;
+        var (sx, sz, top) = Summit(g);
+        var reach = SceneKit.ReachWithoutJumping(g, g.Spawn);
+        Assert.Contains(reach, p => Math.Max(Math.Abs(p.X - sx), Math.Abs(p.Z - sz)) <= 3 && p.Y >= top - 2);
+        var hut = g.Structures.First(s => s.Name == "mountain_hut");
+        Assert.Contains(reach, p => p.X > hut.Min.X && p.X < hut.Max.X && p.Z > hut.Min.Z && p.Z < hut.Max.Z && p.Y <= hut.Min.Y + 2);
+    }
+
+    [Fact]
+    public void Doors_need_no_jump() => SceneKit.DoorsNeedNoJump(World.Value);
+
+    [Fact]
     public void Most_of_the_map_is_walkable() => Assert.True(SceneKit.WalkableShare(World.Value) >= 0.7);
 
     [Fact]

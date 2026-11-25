@@ -4,12 +4,12 @@ namespace Inpc.Game;
 
 /// <summary>
 /// Third-person walker (design §6-5). Origin at the feet. WASD move, Shift run, Space jump, mouse look
-/// (click to capture, Esc to release). Walks up one-block (0.25 m) ledges like stairs; anything higher needs a jump
-/// (user decision 2026-11-25). Speeds ease in and out so the character does not slide.
+/// (click to capture, Esc to release). Ledges need a jump, except on stairs (stairs, paths, door thresholds) where it
+/// walks up steps of up to two blocks (user decision 2026-11-25). Speeds ease in and out so it does not slide.
 /// </summary>
 public partial class Player : CharacterBody3D
 {
-    const float Walk = 3f, Run = 5f, JumpSpeed = 4.6f, StepHeight = 0.3f;   // jump ≈ 1 m; step = one block, not two
+    const float Walk = 3f, Run = 5f, JumpSpeed = 4.6f, StepHeight = 0.55f;  // jump ≈ 1 m; stairs: up to two blocks
     const float Accel = 18f, Decel = 24f, AirAccel = 6f;                      // m/s² toward the wanted speed
     const float Radius = 0.3f, Tall = 1.75f;
 
@@ -17,6 +17,8 @@ public partial class Player : CharacterBody3D
     public Camera3D Camera { get; private set; } = null!;
     /// <summary>Set by tests/benches to walk without a keyboard: world-space direction on the ground plane.</summary>
     public Vector3? AutoWalk { get; set; }
+    /// <summary>Is the column under this world point a stair? Null: every ledge is a stair (the G0 world).</summary>
+    public Func<Vector3, bool>? StairAt { get; set; }
 
     Node3D _yaw = null!;
     SpringArm3D _arm = null!;
@@ -122,15 +124,22 @@ public partial class Player : CharacterBody3D
     {
         var t = GlobalTransform;
         if (!TestMove(t, move)) return;                       // nothing in the way
-        var lift = new Vector3(0, StepHeight, 0);
-        if (TestMove(t, lift)) return;                        // head room blocked
-        var raised = t.Translated(lift);
-        if (TestMove(raised, move)) return;                   // a wall, not a ledge
-        var ahead = raised.Translated(move);
-        var hit = new KinematicCollision3D();
-        if (!TestMove(ahead, -lift, hit)) return;             // no ground within reach (a drop)
-        var landed = ahead.Origin + hit.GetTravel();
-        float rise = landed.Y - t.Origin.Y;
-        if (rise > 0.01f && rise <= StepHeight) GlobalPosition = landed;
+        // try a one-block lift first, then two: under a low ceiling (a stairwell) the higher lift would hit it
+        foreach (float height in new[] { 0.3f, StepHeight })
+        {
+            var lift = new Vector3(0, height, 0);
+            if (TestMove(t, lift)) continue;                  // head room blocked
+            var raised = t.Translated(lift);
+            if (TestMove(raised, move)) continue;             // a wall (or a step higher than this lift)
+            var ahead = raised.Translated(move);
+            var hit = new KinematicCollision3D();
+            if (!TestMove(ahead, -lift, hit)) return;         // no ground within reach (a drop)
+            var landed = ahead.Origin + hit.GetTravel();
+            // only stairs lift without a jump; look at the column the foot steps onto, one body radius ahead
+            if (StairAt is { } stair && !stair(landed + move.Normalized() * (Radius + 0.05f))) return;
+            float rise = landed.Y - t.Origin.Y;
+            if (rise > 0.01f && rise <= height) GlobalPosition = landed;
+            return;
+        }
     }
 }

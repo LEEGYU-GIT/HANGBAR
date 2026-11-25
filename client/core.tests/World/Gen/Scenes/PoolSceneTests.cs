@@ -93,6 +93,18 @@ public class PoolSceneTests
     }
 
     [Fact]
+    public void You_can_walk_out_of_the_pool_without_jumping()
+    {
+        var g = World.Value;
+        var deep = PoolWater(g).GroupBy(c => (c.X, c.Z)).First(c => c.Count() == 8);
+        var floor = new BlockPos(deep.Key.X, deep.Min(c => c.Y), deep.Key.Z);
+        Assert.Contains(g.Spawn, SceneKit.ReachWithoutJumping(g, floor));
+    }
+
+    [Fact]
+    public void Doors_need_no_jump() => SceneKit.DoorsNeedNoJump(World.Value);
+
+    [Fact]
     public void Ladders_stand_at_the_edge()
     {
         var g = World.Value;

@@ -93,8 +93,19 @@ public partial class WorldRoot : Node3D
         AddEdgeWalls();
         Player = new Player { Position = SpawnPoint };
         AddChild(Player);
-        if (_generated is { } g) Player.SetView(g.FacingDegrees, g.PitchDegrees);
+        if (_generated is { } g)
+        {
+            Player.SetView(g.FacingDegrees, g.PitchDegrees);
+            float cell = ChunkMesher.BlockSize;
+            int n = g.World.SizeX;
+            Player.StairAt = p =>
+            {
+                int x = (int)Mathf.Floor(p.X / cell), z = (int)Mathf.Floor(p.Z / cell);
+                return x >= 0 && z >= 0 && x < n && z < n && g.Stairs[z * n + x];
+            };
+        }
         if (Args.TryGetValue("walktest", out var secs) && float.TryParse(secs, out var s)) _ = WalkTest(s);
+        if (Args.TryGetValue("stairtest", out var ssecs) && float.TryParse(ssecs, out var ss) && _generated is { } gen) _ = StairTest(gen, ss);
 
         double bench = Args.TryGetValue("bench", out var b) && double.TryParse(b, out var bs) ? bs : 0;
         var probe = new PerfProbe();
@@ -142,6 +153,89 @@ public partial class WorldRoot : Node3D
     /// Dev check for the step-up rule (plan Review Focus 4): walks toward the map's highest column for the given seconds
     /// and prints how far and how high the player got. A walker stuck on 0.25 m ledges barely moves.
     /// </summary>
+    /// <summary>
+    /// Dev check for stairs (user decision 2026-11-25): finds the highest cell reachable without jumping (steps up
+    /// only onto stair columns), walks there along that route for the given seconds and prints how high it got.
+    /// </summary>
+    async Task StairTest(GeneratedWorld g, float seconds)
+    {
+        await ToSignal(GetTree().CreateTimer(1.0), SceneTreeTimer.SignalName.Timeout);
+        var w = g.World;
+        int n = w.SizeX;
+        // the body is 0.6 m wide: keep the route one column away from walls and from props that block the way
+        var blocked = new HashSet<(int, int)>();
+        foreach (var p in g.Props.Where(p => p.Kind is PropKind.Tree or PropKind.Rock or PropKind.Bush or PropKind.Parasol or PropKind.Bench))
+            for (int dz = -2; dz <= 2; dz++)
+                for (int dx = -2; dx <= 2; dx++) blocked.Add((p.X + dx, p.Z + dz));
+        bool Roomy(BlockPos q)
+        {
+            if (blocked.Contains((q.X, q.Z))) return false;
+            for (int dz = -1; dz <= 1; dz++)
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    bool ok = false;
+                    for (int dy = -2; dy <= 2 && !ok; dy++) ok = Hangbar.Core.World.Gen.Walkability.IsStandable(w, q.X + dx, q.Y + dy, q.Z + dz);
+                    if (!ok) return false;
+                }
+            return true;
+        }
+        var prev = new Dictionary<BlockPos, BlockPos>();
+        var queue = new Queue<BlockPos>();
+        prev[g.Spawn] = g.Spawn;
+        queue.Enqueue(g.Spawn);
+        var best = g.Spawn;
+        while (queue.Count > 0)
+        {
+            var p = queue.Dequeue();
+            if (p.Y > best.Y) best = p;
+            foreach (var (dx, dz) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
+            {
+                int nx = p.X + dx, nz = p.Z + dz;
+                if (nx < 1 || nz < 1 || nx >= n - 1 || nz >= n - 1) continue;
+                for (int dy = -2; dy <= 2; dy++)
+                {
+                    if (dy > 0 && !g.Stairs[nz * n + nx]) break;
+                    var q = new BlockPos(nx, p.Y + dy, nz);
+                    if (!prev.ContainsKey(q) && Hangbar.Core.World.Gen.Walkability.IsStandable(w, q.X, q.Y, q.Z) && Roomy(q)) { prev[q] = p; queue.Enqueue(q); }
+                }
+            }
+        }
+        var route = new List<BlockPos>();
+        for (var c = best; c != g.Spawn; c = prev[c]) route.Add(c);
+        route.Reverse();
+        float bs = ChunkMesher.BlockSize;
+        GD.Print($"[stairtest] target y={best.Y} ({best.Y - g.Spawn.Y} blocks up), route {route.Count} cells");
+        var start = Player.GlobalPosition;
+        int next = 0;
+        for (float t = 0; t < seconds && next < route.Count; t += 0.05f)
+        {
+            var at = Player.GlobalPosition;
+            while (next < route.Count)
+            {
+                var c = route[next];
+                var aim = new Vector3((c.X + 0.5f) * bs, 0, (c.Z + 0.5f) * bs);
+                if ((aim - at with { Y = 0 }).Length() > 0.2f) break;
+                next++;
+            }
+            if (next < route.Count)
+            {
+                var c = route[next];
+                Player.AutoWalk = new Vector3((c.X + 0.5f) * bs - at.X, 0, (c.Z + 0.5f) * bs - at.Z);
+            }
+            await ToSignal(GetTree().CreateTimer(0.05), SceneTreeTimer.SignalName.Timeout);
+        }
+        Player.AutoWalk = null;
+        var end = Player.GlobalPosition;
+        GD.Print($"[stairtest] reached {next}/{route.Count} cells, rise={end.Y - start.Y:0.00}m of {(best.Y - g.Spawn.Y) * bs:0.00}m");
+        if (next < route.Count)
+        {
+            var c = route[next];
+            var here = next > 0 ? route[next - 1] : g.Spawn;
+            GD.Print($"[stairtest] stuck at ({end.X / bs:0.0},{end.Y / bs:0.0},{end.Z / bs:0.0}) going {here}->{c} stair={g.Stairs[c.Z * n + c.X]} floor={Player.IsOnFloor()}");
+        }
+        GetTree().Quit();
+    }
+
     async Task WalkTest(float seconds)
     {
         await ToSignal(GetTree().CreateTimer(1.0), SceneTreeTimer.SignalName.Timeout);

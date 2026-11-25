@@ -61,15 +61,19 @@ public sealed class PoolScene : IScene
                     double t = Math.Clamp((b - _b0 - 0.4 * _len) / (0.3 * _len), 0, 1);
                     ctx.Surface[i] = Level - (int)Math.Round(Shallow + (Deep - Shallow) * t);
                     ctx.WaterTop[i] = Level;
+                    ctx.Stairs[i] = true; // the sloping floor is a ramp: walked up without jumping (walls stay 5+ high)
                 }
                 else if (deck && a >= _a0 - Walkway && a < _a0 + _wid + Walkway && b >= _b0 - Walkway && b < _b0 + _len + Walkway)
                     ctx.Path[i] = true; // the walkway round the pool: worn, not mossy
             }
 
-        // the way out: steps of 2 blocks in the shallow corner of lane 0 (floor 52 → 54 → 56 → deck 57)
+        // the way out: steps of 2 blocks in the shallow corner of lane 0 (floor 52 → 54 → 56 → deck 57); they and the
+        // deck edge above them are stairs (no jump)
         for (int b = _b0; b < _b0 + 4; b++)
             for (int a = _a0; a < _a0 + 4; a++)
                 ctx.Surface[_f.I(a, b)] = b < _b0 + 2 ? Level - 1 : Level - 3;
+        for (int b = _b0 - 1; b < _b0 + 5; b++)
+            for (int a = _a0; a < _a0 + 4; a++) ctx.Stairs[_f.I(a, b)] = true;
     }
 
     // ---- build -----------------------------------------------------------------------------------------------

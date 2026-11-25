@@ -76,6 +76,48 @@ public static class SceneKit
         return sw.ElapsedMilliseconds;
     }
 
+    /// <summary>
+    /// Cells reached on foot without jumping (user decision 2026-11-25): stepping down up to 2 blocks anywhere,
+    /// stepping up 1–2 blocks only onto stair columns (stairs, paths, door thresholds).
+    /// </summary>
+    public static HashSet<BlockPos> ReachWithoutJumping(GeneratedWorld g, BlockPos start)
+    {
+        var w = g.World;
+        var seen = new HashSet<BlockPos>();
+        if (!Walkability.IsStandable(w, start.X, start.Y, start.Z)) return seen;
+        var queue = new Queue<BlockPos>();
+        seen.Add(start);
+        queue.Enqueue(start);
+        while (queue.Count > 0)
+        {
+            var p = queue.Dequeue();
+            foreach (var (dx, dz) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
+            {
+                int nx = p.X + dx, nz = p.Z + dz;
+                if (nx < 0 || nz < 0 || nx >= N || nz >= N) continue;
+                bool stair = g.Stairs[nz * N + nx];
+                for (int dy = -Walkability.Step; dy <= Walkability.Step; dy++)
+                {
+                    if (dy > 0 && !stair) break;
+                    var q = new BlockPos(nx, p.Y + dy, nz);
+                    if (Walkability.IsStandable(w, q.X, q.Y, q.Z) && seen.Add(q)) queue.Enqueue(q);
+                }
+            }
+        }
+        return seen;
+    }
+
+    /// <summary>Every structure with a door: its door column and the columns round it count as stairs.</summary>
+    public static void DoorsNeedNoJump(GeneratedWorld g)
+    {
+        foreach (var s in g.Structures)
+        {
+            if (!s.Anchors.TryGetValue("door", out var d)) continue;
+            foreach (var (dx, dz) in new[] { (0, 0), (1, 0), (-1, 0), (0, 1), (0, -1) })
+                Assert.True(g.Stairs[(d.Z + dz) * N + d.X + dx], $"{s.Name}: no step-up at its door ({d.X + dx},{d.Z + dz})");
+        }
+    }
+
     public static bool SeesFromSpawn(GeneratedWorld g, (double X, double Y, double Z) target) =>
         Sight.Clear(g.World, (g.Spawn.X + 0.5, g.Spawn.Y + 6.4, g.Spawn.Z + 0.5), target);
 
