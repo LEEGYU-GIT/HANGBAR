@@ -38,6 +38,6 @@ public class SceneTests
     public void Only_the_part_one_scenes_are_built()
     {
         var built = Enum.GetValues<Scene>().Where(Scenes.IsBuilt).ToHashSet();
-        Assert.True(built.SetEquals(new[] { Scene.Beach, Scene.Pool, Scene.House, Scene.Mountain }), string.Join(",", built));
+        Assert.True(built.SetEquals(new[] { Scene.Beach, Scene.Pool, Scene.House, Scene.Mountain, Scene.Meadow }), string.Join(",", built));
     }
 }

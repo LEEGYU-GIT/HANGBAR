@@ -1,0 +1,124 @@
+part: shed_shell
+size: 10 13 8                # a closed wooden shed: plank walls, a painted door, one small window, a pitched roof
+legend:
+  W = Wood secondary
+  D = Wood dark
+  G = DarkGlass #2E3A44
+  R = Wood dark
+layer 0:
+WWWWWWWWWW
+WWWWWWWWWW
+WWWWWWWWWW
+WWWWWWWWWW
+WWWWWWWWWW
+WWWWWWWWWW
+WWWWWWWWWW
+WWWWWWWWWW
+layer 1:
+WWWDDDDWWW
+W________W
+W________W
+W________W
+W________W
+W________W
+W________W
+WWWWWWWWWW
+layer 2:
+WWWDDDDWWW
+W________W
+W________W
+W________W
+W________W
+W________W
+W________W
+WWWWWWWWWW
+layer 3:
+WWWDDDDWWW
+W________W
+W________W
+W________W
+W________W
+W________W
+W________W
+WWWWWWWWWW
+layer 4:
+WWWDDDDWWW
+W________W
+G________W
+G________W
+G________W
+W________W
+W________W
+WWWWWWWWWW
+layer 5:
+WWWDDDDWWW
+W________W
+G________W
+G________W
+G________W
+W________W
+W________W
+WWWWWWWWWW
+layer 6:
+WWWDDDDWWW
+W________W
+G________W
+G________W
+G________W
+W________W
+W________W
+WWWWWWWWWW
+layer 7:
+WWWDDDDWWW
+W________W
+W________W
+W________W
+W________W
+W________W
+W________W
+WWWWWWWWWW
+layer 8:
+WWWWWWWWWW
+W________W
+W________W
+W________W
+W________W
+W________W
+W________W
+WWWWWWWWWW
+layer 9:
+WWWWWWWWWW
+W________W
+W________W
+W________W
+W________W
+W________W
+W________W
+WWWWWWWWWW
+layer 10:
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+layer 11:
+__________
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+__________
+layer 12:
+__________
+__________
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+RRRRRRRRRR
+__________
+__________

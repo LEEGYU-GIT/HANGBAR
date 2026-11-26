@@ -14,6 +14,7 @@ public class SceneTimingTests
     [InlineData(Scene.Beach)]
     [InlineData(Scene.Pool)]
     [InlineData(Scene.House)]
+    [InlineData(Scene.Meadow)]
     public void Generates_within_three_seconds(Scene s)
     {
         long ms = SceneKit.GenerationMilliseconds(s);

@@ -44,7 +44,7 @@ public static class Scenes
     };
 
     /// <summary>Whether <see cref="Create"/> can build this scene yet (part 1: four of the nineteen).</summary>
-    public static bool IsBuilt(Scene s) => s is Scene.Beach or Scene.Pool or Scene.House or Scene.Mountain;
+    public static bool IsBuilt(Scene s) => s is Scene.Beach or Scene.Pool or Scene.House or Scene.Mountain or Scene.Meadow;
 
     /// <summary>"beach", "Pool", … (case ignored); null when unknown.</summary>
     public static Scene? FromName(string name) => Enum.TryParse<Scene>(name, true, out var s) && Enum.IsDefined(s) ? s : null;
@@ -55,6 +55,7 @@ public static class Scenes
         Scene.Pool => new PoolScene(),
         Scene.House => new HouseScene(),
         Scene.Mountain => new MountainScene(),
+        Scene.Meadow => new MeadowScene(),
         _ => throw new NotSupportedException($"scene {s} is not built yet"),
     };
 }
