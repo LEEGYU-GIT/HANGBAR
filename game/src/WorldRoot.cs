@@ -44,6 +44,12 @@ public partial class WorldRoot : Node3D
                 GetTree().Quit(2);
                 return;
             }
+            if (!Scenes.IsBuilt(scene))
+            {
+                GD.Print("[world] that scene is recognized but not built yet; use beach, pool, house or mountain");
+                GetTree().Quit(2);
+                return;
+            }
             var prepared = ImageFit.Prepare(photo, SceneContext.Size);
             var g = WorldGenerator.Generate(scene, Palette.Extract(prepared), MoodReader.Read(prepared), prepared, WorldSeed.Of(prepared),
                 Horizon.Estimate(prepared));

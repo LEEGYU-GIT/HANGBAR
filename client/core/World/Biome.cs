@@ -5,11 +5,19 @@ namespace Hangbar.Core.World;
 /// <summary>The kind of world a photo becomes (design §6-3). Field is the default.</summary>
 public enum Biome { Field, Road, Water, Forest, City, Indoor, Transit }
 
-/// <summary>Places365 scene labels → biome, from the embedded table biome-labels.csv (design §6-3-1).</summary>
+/// <summary>
+/// Places365 scene labels → biome and scene variant, from the embedded table biome-labels.csv
+/// (design §6-3-1, v2 design §6-1). Labels left out on purpose (ambiguous places) go to the color guess.
+/// </summary>
 public static class BiomeLabels
 {
+    static readonly (Dictionary<string, Biome> Biomes, Dictionary<string, Scene> Scenes) Tables = Load();
+
     /// <summary>Scene name without the "/x/" prefix and tail ("swimming_pool", not "/s/swimming_pool/outdoor").</summary>
-    public static IReadOnlyDictionary<string, Biome> Table { get; } = Load();
+    public static IReadOnlyDictionary<string, Biome> Table => Tables.Biomes;
+
+    /// <summary>The same names → scene variant; every variant lies in the label's biome.</summary>
+    public static IReadOnlyDictionary<string, Scene> SceneTable => Tables.Scenes;
 
     /// <summary>
     /// "/c/coffee_shop" → Indoor, "/s/swimming_pool/outdoor" → Water. Null for a label the table leaves out on
@@ -17,27 +25,38 @@ public static class BiomeLabels
     /// </summary>
     public static Biome? FromPlacesLabel(string label)
     {
+        return Table.TryGetValue(Name(label), out var biome) ? biome : null;
+    }
+
+    /// <summary>"/s/swimming_pool/outdoor" → Pool, "/c/coffee_shop" → Cafe; null as for the biome.</summary>
+    public static Scene? SceneFromPlacesLabel(string label) => SceneTable.TryGetValue(Name(label), out var s) ? s : null;
+
+    static string Name(string label)
+    {
         var name = label.AsSpan().Trim();
         if (name.Length > 3 && name[0] == '/' && name[2] == '/') name = name[3..];
         int tail = name.IndexOf('/');
         if (tail >= 0) name = name[..tail];
-        return Table.TryGetValue(name.ToString(), out var biome) ? biome : null;
+        return name.ToString();
     }
 
-    static Dictionary<string, Biome> Load()
+    static (Dictionary<string, Biome>, Dictionary<string, Scene>) Load()
     {
         using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("biome-labels.csv")
             ?? throw new InvalidOperationException("biome-labels.csv is not embedded");
         using var reader = new StreamReader(stream);
-        var table = new Dictionary<string, Biome>(StringComparer.Ordinal);
-        reader.ReadLine(); // header: label,biome
+        var biomes = new Dictionary<string, Biome>(StringComparer.Ordinal);
+        var scenes = new Dictionary<string, Scene>(StringComparer.Ordinal);
+        reader.ReadLine(); // header: label,biome,scene
         while (reader.ReadLine() is { } line)
         {
             if (line.Length == 0) continue;
             var parts = line.Split(',');
-            table.Add(parts[0].Trim(), Enum.Parse<Biome>(parts[1].Trim()));
+            string name = parts[0].Trim();
+            biomes.Add(name, Enum.Parse<Biome>(parts[1].Trim()));
+            scenes.Add(name, Enum.Parse<Scene>(parts[2].Trim()));
         }
-        return table;
+        return (biomes, scenes);
     }
 }
 

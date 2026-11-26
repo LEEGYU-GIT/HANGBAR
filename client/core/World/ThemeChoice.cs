@@ -2,8 +2,11 @@ using System.Text.Json;
 
 namespace Hangbar.Core.World;
 
-/// <summary>A photo's theme. Source is "places", "clip" (the two model candidates) or "color" (the color guess).</summary>
-public sealed record ThemeResult(Biome Biome, float Confidence, string Source);
+/// <summary>
+/// A photo's theme. Source is "places", "clip" (the two model candidates) or "color" (the color guess).
+/// Scene is the variant inside the biome (v2 design §6-1); a result from <see cref="ThemeChoice"/> always has one.
+/// </summary>
+public sealed record ThemeResult(Biome Biome, float Confidence, string Source, Scene? Scene = null);
 
 public static class ThemeChoice
 {
@@ -11,10 +14,15 @@ public static class ThemeChoice
     /// The model's answer when it is sure enough, otherwise the color guess (Confidence 0, Source "color").
     /// Never throws: a missing model, an unsure model and an odd photo all end in a biome (plan Review Focus 1).
     /// </summary>
+    /// The scene is the model's when it lies in the chosen biome, otherwise the biome's default scene.
     public static ThemeResult Choose(ThemeResult? model, PixelImage prepared, float minConfidence = 0.35f) =>
-        model is { } m && Enum.IsDefined(m.Biome) && m.Confidence >= minConfidence
+        WithScene(model is { } m && Enum.IsDefined(m.Biome) && m.Confidence >= minConfidence
             ? m
-            : new ThemeResult(ColorGuess.Guess(prepared), 0f, "color");
+            : new ThemeResult(ColorGuess.Guess(prepared), 0f, "color"));
+
+    /// <summary>The result with a scene that lies in its biome (the biome's default when it has none or a wrong one).</summary>
+    public static ThemeResult WithScene(ThemeResult r) =>
+        r.Scene is { } s && Enum.IsDefined(s) && Scenes.BiomeOf(s) == r.Biome ? r : r with { Scene = Scenes.DefaultFor(r.Biome) };
 }
 
 /// <summary>
@@ -27,7 +35,7 @@ public static class ThemeChoice
 /// </summary>
 public sealed class ThemeCache(string path)
 {
-    sealed record Entry(string? Biome, float Confidence, string? Source);
+    sealed record Entry(string? Biome, float Confidence, string? Source, string? Scene = null);
 
     static readonly JsonSerializerOptions Json = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
@@ -36,12 +44,13 @@ public sealed class ThemeCache(string path)
     public ThemeResult? Get(ulong seed) =>
         _entries.TryGetValue(Key(seed), out var e) && e is { Source: { } source }
         && Enum.TryParse<Biome>(e.Biome, out var biome) && Enum.IsDefined(biome)
-            ? new ThemeResult(biome, e.Confidence, source)
+            ? ThemeChoice.WithScene(new ThemeResult(biome, e.Confidence, source,
+                Enum.TryParse<Scene>(e.Scene, out var scene) && Enum.IsDefined(scene) ? scene : null))
             : null;
 
     public void Put(ulong seed, ThemeResult r)
     {
-        _entries[Key(seed)] = new Entry(r.Biome.ToString(), r.Confidence, r.Source);
+        _entries[Key(seed)] = new Entry(r.Biome.ToString(), r.Confidence, r.Source, r.Scene?.ToString());
         try
         {
             if (Path.GetDirectoryName(Path.GetFullPath(path)) is { } dir) Directory.CreateDirectory(dir);

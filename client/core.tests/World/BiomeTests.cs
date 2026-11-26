@@ -30,6 +30,26 @@ public class BiomeTests
     [InlineData("/p/pasture", Biome.Field)]
     public void Places_labels_map_to_biomes(string label, Biome b) => Assert.Equal(b, BiomeLabels.FromPlacesLabel(label));
 
+    [Theory]
+    [InlineData("/s/swimming_pool/outdoor", Scene.Pool)] [InlineData("/c/coffee_shop", Scene.Cafe)] [InlineData("/m/mountain_snowy", Scene.Mountain)]
+    [InlineData("/b/beach", Scene.Beach)] [InlineData("/l/living_room", Scene.House)] [InlineData("/s/street", Scene.Boulevard)]
+    [InlineData("/s/subway_station/platform", Scene.SubwayStation)] [InlineData("/s/supermarket", Scene.Shop)] [InlineData("/c/classroom", Scene.Office)]
+    [InlineData("/r/residential_neighborhood", Scene.Residential)] [InlineData("/w/wheat_field", Scene.Farm)] [InlineData("/p/park", Scene.Park)]
+    [InlineData("/r/river", Scene.RiverLake)] [InlineData("/a/alley", Scene.Alley)] [InlineData("/t/train_station/platform", Scene.TrainStation)]
+    public void Places_labels_map_to_scenes(string label, Scene s) => Assert.Equal(s, BiomeLabels.SceneFromPlacesLabel(label));
+
+    [Fact]
+    public void Every_label_scene_lies_in_its_biome()
+    {
+        Assert.Equal(BiomeLabels.Table.Count, BiomeLabels.SceneTable.Count);
+        foreach (var (label, biome) in BiomeLabels.Table)
+            Assert.True(Scenes.BiomeOf(BiomeLabels.SceneTable[label]) == biome, $"{label}: {BiomeLabels.SceneTable[label]} is not in {biome}");
+    }
+
+    [Fact]
+    public void Every_scene_has_a_label() =>
+        Assert.All(Enum.GetValues<Scene>(), s => Assert.Contains(s, BiomeLabels.SceneTable.Values));
+
     [Fact]
     public void Unknown_label_is_null() => Assert.Null(BiomeLabels.FromPlacesLabel("/x/not_a_place"));
 
