@@ -17,6 +17,7 @@ public class SceneTimingTests
     [InlineData(Scene.Meadow)]
     [InlineData(Scene.Farm)]
     [InlineData(Scene.CountryRoad)]
+    [InlineData(Scene.Boulevard)]
     public void Generates_within_three_seconds(Scene s)
     {
         long ms = SceneKit.GenerationMilliseconds(s);

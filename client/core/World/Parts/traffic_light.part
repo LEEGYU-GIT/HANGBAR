@@ -1,0 +1,43 @@
+part: traffic_light
+size: 9 18 1                 # a metal pole with an arm reaching over the road (+x) and a light box at its end
+legend:
+  M = Metal dark
+  R = Glass #E0453A
+  Y = Glass #F2C230
+  G = Glass #3FBF5A
+layer 0:
+M________
+layer 1:
+M________
+layer 2:
+M________
+layer 3:
+M________
+layer 4:
+M________
+layer 5:
+M________
+layer 6:
+M________
+layer 7:
+M________
+layer 8:
+M________
+layer 9:
+M________
+layer 10:
+M________
+layer 11:
+M________
+layer 12:
+M______MG
+layer 13:
+M______MY
+layer 14:
+M______MR
+layer 15:
+MMMMMMMMM
+layer 16:
+M________
+layer 17:
+M________
