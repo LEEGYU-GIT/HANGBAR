@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangbar.Core.Tests", "core.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangbar.App", "app\Hangbar.App.csproj", "{C2890176-F40B-43A7-9FEE-EC8A95F33C45}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangbar.Theme", "theme\Hangbar.Theme.csproj", "{8670F38C-EEAF-4425-BEC1-0F78FE164D56}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{C2890176-F40B-43A7-9FEE-EC8A95F33C45}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2890176-F40B-43A7-9FEE-EC8A95F33C45}.Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{C2890176-F40B-43A7-9FEE-EC8A95F33C45}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{8670F38C-EEAF-4425-BEC1-0F78FE164D56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8670F38C-EEAF-4425-BEC1-0F78FE164D56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8670F38C-EEAF-4425-BEC1-0F78FE164D56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8670F38C-EEAF-4425-BEC1-0F78FE164D56}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

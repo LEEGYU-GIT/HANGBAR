@@ -16,7 +16,7 @@ python -m venv .venv
 .venv\Scripts\python -m pip install -r tools/theme-probe/requirements.txt
 .venv\Scripts\python tools/theme-probe/fetch_models.py          # 내려받기와 SHA-256 확인
 .venv\Scripts\python tools/theme-probe/convert_places365.py     # Places365 체크포인트 → ONNX, 라벨 파일
-.venv\Scripts\python tools/theme-probe/make_text_embeddings.py  # CLIP 바이옴 문장 임베딩
+.venv\Scripts\python tools/theme-probe/make_text_embeddings.py  # CLIP 바이옴·장면 변형 문장 임베딩
 ```
 
 Linux:
@@ -43,6 +43,7 @@ python3 -m venv .venv
 | `places365-labels.txt` | 5,484 | | 365줄, 클래스 번호 순서의 라벨(`/a/airfield`) |
 | `clip-vision.onnx` | 88,648,915 | `pixel_values` float [N,3,224,224] | `image_embeds` float [N,512] |
 | `clip-text-biomes.json` | 37,323 | | 바이옴 7개 × 512개 실수 |
+| `clip-text-scenes.json` | 101,357 | | 장면 변형 19개 × 512개 실수(Scene enum 순서). CLIP 실행기가 쓴다 |
 
 SHA-256:
 
@@ -50,6 +51,9 @@ SHA-256:
 - `places365-labels.txt`: `16bbf645b9098261a1dcf7f5430205eab51eb74a4794675648bdce9b9e37c4ea`
 - `clip-vision.onnx`: `b95448754a6ae56964ec80c570c80bb9863787ee85f51b664abed8c0e5f22a7a`
 - `clip-text-biomes.json`: `a0ad4d26bdad129254e5d092696d212f22ebf17dc2a90a93a7883bb1d8143ae6`
+- `clip-text-scenes.json`: `d9faab4e45c27c609ccdd7706472d724c4792f142d16b20b25ad6aa00c46acac` (2026-11-26, Windows PC. 바이옴 파일처럼 CPU에 따라 다를 수 있다)
+
+실행기와 비교 도구(G0.5 Task 4): `client/theme`의 `PlacesModel`, `ClipModel`(ONNX Runtime, CPU). 둘 다 바이옴과 장면 변형을 낸다. 사진 폴더로 두 후보를 비교하려면 `.\scripts\game	heme-probe.ps1 -Photos "폴더"`를 쓴다. 하위 폴더 이름을 장면 이름(beach, pool, house, mountain, cafe 등)으로 하면 정확도도 나온다.
 
 입력 처리(G0.5 Task 4 실행기가 따를 값):
 
