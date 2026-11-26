@@ -1,0 +1,29 @@
+part: signpost
+size: 9 12 1                 # a wooden post with arrow boards pointing both ways
+legend:
+  W = Wood dark
+  B = Wood light
+layer 0:
+____W____
+layer 1:
+____W____
+layer 2:
+____W____
+layer 3:
+____W____
+layer 4:
+____W____
+layer 5:
+____W____
+layer 6:
+_BBBBWBB_
+layer 7:
+____W____
+layer 8:
+BBBBBBBBB
+layer 9:
+____W____
+layer 10:
+__BBWBBB_
+layer 11:
+____W____

@@ -1,0 +1,80 @@
+part: bus_stop
+size: 12 12 5                # a roadside shelter: open front (z=0), wooden back wall (z=4), glass sides, a bench, a flat roof
+legend:
+  W = Wood secondary
+  P = Metal dark
+  G = Glass #C8E6F0
+  B = Wood dark
+  R = Metal light
+layer 0:
+P__________P
+P__________P
+P__________P
+P_B______B_P
+WWWWWWWWWWWW
+layer 1:
+P__________P
+P__________P
+P__________P
+P_B______B_P
+WWWWWWWWWWWW
+layer 2:
+P__________P
+P__________P
+P_BBBBBBBB_P
+P_BBBBBBBB_P
+WWWWWWWWWWWW
+layer 3:
+P__________P
+G__________G
+G__________G
+G__________G
+WWWWWWWWWWWW
+layer 4:
+P__________P
+G__________G
+G__________G
+G__________G
+WWWWWWWWWWWW
+layer 5:
+P__________P
+G__________G
+G__________G
+G__________G
+WWWWWWWWWWWW
+layer 6:
+P__________P
+G__________G
+G__________G
+G__________G
+WWWWWWWWWWWW
+layer 7:
+P__________P
+G__________G
+G__________G
+G__________G
+WWWWWWWWWWWW
+layer 8:
+P__________P
+G__________G
+G__________G
+G__________G
+WWWWWWWWWWWW
+layer 9:
+P__________P
+G__________G
+G__________G
+G__________G
+WWWWWWWWWWWW
+layer 10:
+P__________P
+P__________P
+P__________P
+P__________P
+WWWWWWWWWWWW
+layer 11:
+RRRRRRRRRRRR
+RRRRRRRRRRRR
+RRRRRRRRRRRR
+RRRRRRRRRRRR
+RRRRRRRRRRRR
