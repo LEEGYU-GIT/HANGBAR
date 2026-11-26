@@ -53,7 +53,7 @@ SHA-256:
 - `clip-text-biomes.json`: `a0ad4d26bdad129254e5d092696d212f22ebf17dc2a90a93a7883bb1d8143ae6`
 - `clip-text-scenes.json`: `d9faab4e45c27c609ccdd7706472d724c4792f142d16b20b25ad6aa00c46acac` (2026-11-26, Windows PC. 바이옴 파일처럼 CPU에 따라 다를 수 있다)
 
-실행기와 비교 도구(G0.5 Task 4): `client/theme`의 `PlacesModel`, `ClipModel`(ONNX Runtime, CPU). 둘 다 바이옴과 장면 변형을 낸다. 사진 폴더로 두 후보를 비교하려면 `.\scripts\game	heme-probe.ps1 -Photos "폴더"`를 쓴다. 하위 폴더 이름을 장면 이름(beach, pool, house, mountain, cafe 등)으로 하면 정확도도 나온다.
+실행기와 비교 도구(G0.5 Task 4): `client/theme`의 `PlacesModel`, `ClipModel`(ONNX Runtime, CPU). 둘 다 바이옴과 장면 변형을 낸다. 사진 폴더로 두 후보를 비교하려면 `.\scripts\game\theme-probe.ps1 -Photos "폴더"`를 쓴다. 하위 폴더 이름을 장면 이름(beach, pool, house, mountain, cafe 등)으로 하면 정확도도 나온다.
 
 입력 처리(G0.5 Task 4 실행기가 따를 값):
 
