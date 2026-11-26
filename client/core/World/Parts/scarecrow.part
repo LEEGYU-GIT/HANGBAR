@@ -1,0 +1,33 @@
+part: scarecrow
+size: 5 13 1                 # a pole, outstretched cloth arms, a sack head and a hat
+legend:
+  W = Wood dark
+  C = Cloth accent
+  K = Cloth light
+  H = Cloth dark
+layer 0:
+__W__
+layer 1:
+__W__
+layer 2:
+__W__
+layer 3:
+__W__
+layer 4:
+__W__
+layer 5:
+__W__
+layer 6:
+_CWC_
+layer 7:
+_CWC_
+layer 8:
+CCCCC
+layer 9:
+_CWC_
+layer 10:
+__W__
+layer 11:
+__K__
+layer 12:
+_HHH_

@@ -1,0 +1,229 @@
+part: silo
+size: 7 28 7                 # a round metal grain silo with a domed top
+legend:
+  M = Metal light
+  D = Metal dark
+layer 0:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 1:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 2:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 3:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 4:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 5:
+__DDD__
+_DDDDD_
+DDDDDDD
+DDDDDDD
+DDDDDDD
+_DDDDD_
+__DDD__
+layer 6:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 7:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 8:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 9:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 10:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 11:
+__DDD__
+_DDDDD_
+DDDDDDD
+DDDDDDD
+DDDDDDD
+_DDDDD_
+__DDD__
+layer 12:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 13:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 14:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 15:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 16:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 17:
+__DDD__
+_DDDDD_
+DDDDDDD
+DDDDDDD
+DDDDDDD
+_DDDDD_
+__DDD__
+layer 18:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 19:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 20:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 21:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 22:
+__MMM__
+_MMMMM_
+MMMMMMM
+MMMMMMM
+MMMMMMM
+_MMMMM_
+__MMM__
+layer 23:
+__DDD__
+_DDDDD_
+DDDDDDD
+DDDDDDD
+DDDDDDD
+_DDDDD_
+__DDD__
+layer 24:
+_______
+__MMM__
+_MMMMM_
+_MMMMM_
+_MMMMM_
+__MMM__
+_______
+layer 25:
+_______
+_______
+__MMM__
+__MMM__
+__MMM__
+_______
+_______
+layer 26:
+_______
+_______
+_______
+___M___
+_______
+_______
+_______
+layer 27:
+_______
+_______
+_______
+___D___
+_______
+_______
+_______
